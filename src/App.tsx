@@ -55,8 +55,11 @@ const DEFAULT_REB = `<!-- Explicitly request Tailwind CSS styling for this docum
 </div>
 
 <reb-footer>
-  <div class="w-full text-center text-[10px] text-slate-500 font-mono tracking-widest uppercase border-t border-slate-300 pt-2 mt-8">
-    Rebar Automated Document System — Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+  <div style="width: 100%; display: block; padding: 0 40px; box-sizing: border-box;">
+    <div style="border-top: 1px solid #cbd5e1; margin-bottom: 8px; width: 100%; display: block;"></div>
+    <div style="text-align: center; font-size: 10px; color: #64748b; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; width: 100%; display: block;">
+      Rebar Automated Document System — Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+    </div>
   </div>
 </reb-footer>`;
 
@@ -76,7 +79,7 @@ const REBAR_SNIPPETS = [
   { label: 'Formula Table (Estimate)', snippet: '<reb-table name="estimate_items" label="Estimate Details" options="description:text,quantity:number,unit_price:number,amount:formula[quantity*unit_price|2]">\n  <table class="w-full text-sm border-collapse">\n    <thead>\n      <tr class="bg-slate-100">\n        <th class="p-2 border">Description</th>\n        <th class="p-2 border w-24">Qty</th>\n        <th class="p-2 border w-32">Rate</th>\n        <th class="p-2 border w-32">Amount</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr reb-row>\n        <td class="p-1 border"><reb-declare name="description"></reb-declare>{{.description}}</td>\n        <td class="p-1 border"><reb-declare name="quantity" type="number"></reb-declare>{{.quantity}}</td>\n        <td class="p-1 border"><reb-declare name="unit_price" type="number"></reb-declare>${{.unit_price}}</td>\n        <td class="p-1 border font-bold">${{multiply .quantity .unit_price | formatNumber 2}}</td>\n      </tr>\n    </tbody>\n  </table>\n  <div class="text-right font-bold mt-2 text-lg">\n    Grand Total: ${{sumColumn .estimate_items "amount" | formatNumber 2}}\n  </div>\n</reb-table>' },
   { label: 'Table Row', snippet: '<tr reb-row></tr>' },
   { label: 'Page Break', snippet: '<reb-pagebreak></reb-pagebreak>' },
-  { label: 'Footer', snippet: '<reb-footer>\n  Page <span class="pageNumber"></span> of <span class="totalPages"></span>\n</reb-footer>' },
+  { label: 'Footer', snippet: '<reb-footer>\n  <div style="width: 100%; display: block; padding: 0 40px; box-sizing: border-box;">\n    <div style="border-top: 1px solid #cbd5e1; margin-bottom: 4px; width: 100%; display: block;"></div>\n    <div style="text-align: center; font-size: 14px; font-family: sans-serif; width: 100%; display: block; color: #64748b;">\n      Page <span class="pageNumber"></span> of <span class="totalPages"></span>\n    </div>\n  </div>\n</reb-footer>' },
   { label: 'Hidden Field', snippet: '<reb-declare name="field_name" label="Hidden Field" type="string"></reb-declare>' },
   { label: 'Section Divider', snippet: '<reb-declare type="section" name="section_1" label="Section Title"></reb-declare>' },
   { label: 'Current Date/Time', snippet: '{{ now | formatDate "02/01/2006" }}' },

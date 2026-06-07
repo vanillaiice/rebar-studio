@@ -114,6 +114,7 @@ export function compileReb(rawHTML: string): CompilationResult {
             
             if (className) replacement.className += ' ' + className;
             child.replaceWith(replacement);
+            walk(replacement, isPreview);
           } else {
             // Generate the extraction div for the Go backend
             const replacement = doc.createElement('rebar-pdf-footer-extract');
@@ -121,6 +122,7 @@ export function compileReb(rawHTML: string): CompilationResult {
             if (className) replacement.setAttribute('class', className);
             replacement.innerHTML = child.innerHTML;
             child.replaceWith(replacement);
+            walk(replacement, isPreview);
           }
           continue;
         }
@@ -234,6 +236,12 @@ export function compileReb(rawHTML: string): CompilationResult {
   let previewHtml = previewRoot.innerHTML.trim();
 
   // Globally mock Go template syntax for the visual preview to look clean
+  previewHtml = previewHtml.replace(/\{\{\s*now\s*\|\s*formatDate\s+"([^"]+)"\s*\}\}/g, () => {
+    return new Date().toLocaleDateString();
+  });
+  previewHtml = previewHtml.replace(/\{\{\s*now\s*\}\}/g, () => {
+    return new Date().toLocaleDateString();
+  });
   previewHtml = previewHtml.replace(/\{\{formatDate\s+"([^"]+)"\s+\.([a-zA-Z0-9_]+)\}\}/g, (_, layout) => {
     if (layout === "02/01/06") return "12/04/26";
     return "12/04/2026";
