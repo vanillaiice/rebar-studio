@@ -79,6 +79,7 @@ const REBAR_SNIPPETS = [
   { label: 'Footer', snippet: '<reb-footer>\n  Page <span class="pageNumber"></span> of <span class="totalPages"></span>\n</reb-footer>' },
   { label: 'Hidden Field', snippet: '<reb-declare name="field_name" label="Hidden Field" type="string"></reb-declare>' },
   { label: 'Section Divider', snippet: '<reb-declare type="section" name="section_1" label="Section Title"></reb-declare>' },
+  { label: 'Current Date/Time', snippet: '{{ now | formatDate "02/01/2006" }}' },
   { label: 'Tailwind Config', snippet: '<reb-tailwind></reb-tailwind>' }
 ];
 
