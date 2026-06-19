@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Editor from '@monaco-editor/react';
-import type { Monaco } from '@monaco-editor/react';
+import type { Monaco, OnMount } from '@monaco-editor/react';
+import type * as MonacoApi from 'monaco-editor';
 import { FileCode2, Eye, Download, Upload, Code2, Database, LayoutTemplate, PlusCircle } from 'lucide-react';
 import { compileReb, type CompilationResult } from './compiler';
 
@@ -97,25 +98,32 @@ function App() {
     const saved = localStorage.getItem('rebar_editor_code');
     return saved !== null ? saved : DEFAULT_REB;
   });
-  const [compiled, setCompiled] = useState<CompilationResult>({
-    schema: [],
-    htmlSource: '',
-    previewHtml: '',
-    paperWidth: '210mm',
-    paperHeight: '297mm'
-  });
+  const compiled = useMemo<CompilationResult>(() => {
+    try {
+      return compileReb(rebCode);
+    } catch (e) {
+      console.error("Compilation error:", e);
+      return {
+        schema: [],
+        htmlSource: '',
+        previewHtml: '',
+        paperWidth: '210mm',
+        paperHeight: '297mm'
+      };
+    }
+  }, [rebCode]);
 
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<MonacoApi.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleEditorDidMount = (editor: any, monaco: Monaco) => {
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
     // Register Auto-completion provider for reb- elements
     monaco.languages.registerCompletionItemProvider('html', {
-      provideCompletionItems: (model: any, position: any) => {
+      provideCompletionItems: (model: MonacoApi.editor.ITextModel, position: MonacoApi.Position) => {
         const word = model.getWordUntilPosition(position);
         const range = {
           startLineNumber: position.lineNumber,
@@ -138,9 +146,10 @@ function App() {
   };
 
   const insertSnippet = (snippet: string) => {
-    if (!editorRef.current) return;
     const editor = editorRef.current;
+    if (!editor) return;
     const selection = editor.getSelection();
+    if (!selection) return;
     editor.executeEdits('snippets', [
       {
         range: selection,
@@ -177,15 +186,9 @@ function App() {
     document.addEventListener('mouseup', stopDrag);
   };
 
-  // Recompile and save whenever REB code changes
+  // Persist the REB code whenever it changes (compilation is derived via useMemo)
   useEffect(() => {
-    try {
-      localStorage.setItem('rebar_editor_code', rebCode);
-      const result = compileReb(rebCode);
-      setCompiled(result);
-    } catch (e) {
-      console.error("Compilation error:", e);
-    }
+    localStorage.setItem('rebar_editor_code', rebCode);
   }, [rebCode]);
 
   const handleDownload = () => {
