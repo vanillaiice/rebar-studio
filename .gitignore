@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Generated assets (built from ../server via `npm run build:wasm`)
+public/rebcompiler.wasm
+public/wasm_exec.js
+public/tailwindcss.js
+public/paged.polyfill.js
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

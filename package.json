@@ -2,9 +2,13 @@
   "name": "editor",
   "private": true,
   "version": "0.0.0",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
+    "build:wasm": "GOOS=js GOARCH=wasm go build -C ../server -o ../editor/public/rebcompiler.wasm ./cmd/wasm && cp \"$(go env GOROOT)/lib/wasm/wasm_exec.js\" public/wasm_exec.js && cp ../server/pkg/pdf/tailwindcss.js public/tailwindcss.js && cp node_modules/pagedjs/dist/paged.polyfill.min.js public/paged.polyfill.js",
+    "predev": "npm run build:wasm",
     "dev": "vite",
+    "prebuild": "npm run build:wasm",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -31,6 +35,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "pagedjs": "^0.4.3",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
