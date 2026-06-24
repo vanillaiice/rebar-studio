@@ -1,12 +1,12 @@
 {
-  "name": "editor",
+  "name": "rebar-studio",
   "private": true,
   "version": "0.0.0",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
-    "build:wasm": "GOOS=js GOARCH=wasm go build -C ../server -o ../editor/public/rebcompiler.wasm ./cmd/wasm && cp \"$(go env GOROOT)/lib/wasm/wasm_exec.js\" public/wasm_exec.js && cp ../server/pkg/pdf/tailwindcss.js public/tailwindcss.js && cp node_modules/pagedjs/dist/paged.polyfill.min.js public/paged.polyfill.js",
+    "build:wasm": "GOOS=js GOARCH=wasm go build -C ../server -o ../rebar-studio/public/rebcompiler.wasm ./cmd/wasm && cp \"$(go env GOROOT)/lib/wasm/wasm_exec.js\" public/wasm_exec.js && cp ../server/pkg/pdf/tailwindcss.js public/tailwindcss.js && cp node_modules/pagedjs/dist/paged.polyfill.min.js public/paged.polyfill.js",
     "predev": "npm run build:wasm",
     "dev": "vite",
     "prebuild": "npm run build:wasm",
