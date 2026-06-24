@@ -41,6 +41,22 @@ npm run build
 ```
 This generates static HTML/JS/CSS assets in the `/dist` directory.
 
+## Desktop app (Electron)
+
+The same package ships a desktop build. The Electron main process lives in
+[`electron/main.cjs`](./electron/main.cjs) and loads `dist/` directly. In the
+desktop app the live preview renders the **real PDF** via Chromium's
+`printToPDF` (the same engine as the Gotenberg backend).
+
+```bash
+npm run electron:dev    # build the web app, then launch Electron
+npm run electron:pack   # unpacked build (release/, fast, for testing)
+npm run electron:dist   # packaged installers (AppImage / nsis / dmg)
+```
+
+> **Requires Go** on your `PATH` (the live compiler is built to WebAssembly from
+> the `../server` module during `build`).
+
 ## License
 
 The Rebar Studio editor is licensed under the **GNU General Public License
@@ -52,6 +68,5 @@ GPL-3.0-or-later`; they are included here (as `rebcompiler.wasm`) under the GPL.
 
 Bundled third-party components, all under GPL-compatible permissive licenses:
 
-- React, Monaco Editor, Tailwind CSS, paged.js — MIT
+- React, Monaco Editor, Tailwind CSS, paged.js, Electron — MIT
 - Go `wasm_exec.js` — BSD-3-Clause (the Go authors)
-- Electron (`editor-electron`) — MIT

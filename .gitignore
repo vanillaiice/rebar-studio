@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Electron packaging output (electron-builder)
+release/
+
 # Generated assets (built from ../server via `npm run build:wasm`)
 public/rebcompiler.wasm
 public/wasm_exec.js

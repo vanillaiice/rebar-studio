@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <!-- Amber rounded background -->
+  <rect x="0" y="0" width="512" height="512" rx="100" fill="#facc15" />
+  
+  <!-- Steel Code2 icon -->
+  <g transform="translate(112, 112) scale(12)" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m18 16 4-4-4-4"/>
+    <path d="m6 8-4 4 4 4"/>
+    <path d="m14.5 4-5 16"/>
+  </g>
+</svg>

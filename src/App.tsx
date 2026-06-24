@@ -24,7 +24,7 @@ const TAILWIND_HREF = new URL('tailwindcss.js', document.baseURI).href;
 // Locally-bundled paged.js polyfill (CSS Paged Media) — web-preview fallback.
 const PAGED_HREF = new URL('paged.polyfill.js', document.baseURI).href;
 
-// Under editor-electron (nodeIntegration), the renderer can reach the main
+// Under the Electron desktop build (nodeIntegration), the renderer can reach the main
 // process to render the document with Chromium's own print engine — the same
 // engine the Gotenberg backend uses — for a true-to-PDF preview (named landscape
 // pages, footers, @page sizes that paged.js can't do). In the browser
