@@ -1,7 +1,9 @@
 {
   "name": "rebar-studio",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Rebar Studio - WYSIWYG editor for .reb form templates with a live PDF preview.",
+  "author": "hblabs",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "electron/main.cjs",
@@ -29,7 +31,10 @@
     ],
     "linux": {
       "target": ["AppImage"],
-      "category": "Development"
+      "category": "Development",
+      "executableName": "rebar-studio",
+      "synopsis": "WYSIWYG editor for .reb form templates",
+      "syncDesktopName": true
     },
     "win": {
       "target": ["nsis", "portable"]
