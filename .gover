@@ -1,0 +1,4 @@
+GOVER_LANG=js
+GOVER_VERSION_FILE=package.json
+GOVER_TAG_COMMAND=git tag rebar-studio@v{{ .Version }}
+COMMIT_COMMAND=git commit package.json package-lock.json -m "chore(rebar-studio): bump to v{{ .Version }}"
