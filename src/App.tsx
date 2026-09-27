@@ -24,21 +24,18 @@ const TAILWIND_HREF = new URL('tailwindcss.js', document.baseURI).href;
 // Locally-bundled paged.js polyfill (CSS Paged Media) — web-preview fallback.
 const PAGED_HREF = new URL('paged.polyfill.js', document.baseURI).href;
 
-// Under the Electron desktop build (nodeIntegration), the renderer can reach the main
-// process to render the document with Chromium's own print engine — the same
-// engine the Gotenberg backend uses — for a true-to-PDF preview (named landscape
-// pages, footers, @page sizes that paged.js can't do). In the browser
+// Under the Electron desktop build, the preload script (electron/preload.cjs) exposes a
+// small bridge to the main process, which renders the document with Chromium's own print
+// engine — the same engine the Gotenberg backend uses — for a true-to-PDF preview (named
+// landscape pages, footers, @page sizes that paged.js can't do). In the browser
 // (`npm run dev`) we fall back to paged.js.
-type ElectronIpc = { invoke(channel: string, ...args: unknown[]): Promise<unknown> };
-const electronIpc: ElectronIpc | null = (() => {
-  try {
-    const req = (window as unknown as { require?: (m: string) => { ipcRenderer: ElectronIpc } }).require;
-    return req ? req('electron').ipcRenderer : null;
-  } catch {
-    return null;
-  }
-})();
-const IS_ELECTRON = electronIpc !== null;
+type StudioBridge = {
+  renderPdf(payload: { html: string; footer: string }): Promise<Uint8Array>;
+  savePdf(bytes: Uint8Array): Promise<boolean>;
+};
+const studioBridge: StudioBridge | null =
+  (window as unknown as { rebarStudio?: StudioBridge }).rebarStudio ?? null;
+const IS_ELECTRON = studioBridge !== null;
 
 let tailwindSourcePromise: Promise<string> | null = null;
 function getTailwindSource(): Promise<string> {
@@ -68,8 +65,10 @@ async function buildElectronDocument(previewHtml: string): Promise<{ html: strin
   // reb-footer becomes Chromium's footer template (its .pageNumber/.totalPages
   // spans are exactly the classes Chromium fills — same as the Gotenberg path).
   let footer = '';
+  let footerClass = '';
   doc.querySelectorAll('rebar-pdf-footer-extract').forEach((el) => {
     footer += el.innerHTML;
+    footerClass ||= el.getAttribute('class') ?? '';
     el.remove();
   });
 
@@ -80,7 +79,9 @@ async function buildElectronDocument(previewHtml: string): Promise<{ html: strin
 <head>
 <meta charset="utf-8">
 <style>
-  @page { ${hasUserSize ? '' : 'size: A4;'} margin: 0.5in; }
+  /* Gotenberg's default margins: 0.5in, and 1in at the bottom when a footer is
+     drawn there. Author @page rules below still override them. */
+  @page { ${hasUserSize ? '' : 'size: A4;'} margin: 0.5in; ${footer ? 'margin-bottom: 1in;' : ''} }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 </style>
 ${userStyles}
@@ -107,8 +108,12 @@ ${userStyles}
 <body>${doc.body.innerHTML}</body>
 </html>`;
 
+  // Same footer document and bottom margin the Go PDF client sends to Gotenberg
+  // (server/pkg/pdf/client.go), so the preview paginates like the real PDF:
+  // Chromium's footer context has a tiny root font size, hence the forced 16px.
+  const classAttr = footerClass ? ` class="${footerClass.replace(/"/g, '&quot;')}"` : '';
   const footerTemplate = footer
-    ? `<div style="font-size:9px; width:100%; padding:0 12mm; box-sizing:border-box;">${footer}</div>`
+    ? `<style>html { font-size: 16px !important; -webkit-print-color-adjust: exact; } body { margin: 0; padding: 0; width: 100%; }</style><div style="width: 100%;"${classAttr}>${footer}</div>`
     : '';
 
   return { html, footer: footerTemplate };
@@ -120,7 +125,7 @@ ${userStyles}
 // running element in every page's bottom margin with live counters, and real page
 // breaks. Printing it (Ctrl/Cmd+P → Save as PDF) reproduces it exactly, the same
 // way the Gotenberg/Chromium backend renders it.
-function buildPagedDocument(previewHtml: string): string {
+function buildPagedDocument(previewHtml: string, scrollY = 0): string {
   const doc = new DOMParser().parseFromString(previewHtml, 'text/html');
 
   // Tailwind is loaded in <head> below (before pagination) for correct layout.
@@ -203,11 +208,12 @@ ${userStyles}
         page.querySelectorAll('.pageNumber').forEach(function (s) { s.textContent = String(i + 1); });
         page.querySelectorAll('.totalPages').forEach(function (s) { s.textContent = String(total); });
       });
-      // Restore the previous scroll position across debounced re-renders.
-      var y = sessionStorage.getItem('rebPreviewScroll');
-      if (y) window.scrollTo(0, parseInt(y, 10));
+      // Restore the previous scroll position across debounced re-renders. The frame is
+      // sandboxed without same-origin access (templates are user content), so it has no
+      // storage: the parent remembers the position from these messages and passes it back.
+      window.scrollTo(0, ${Math.max(0, Math.round(scrollY))});
       window.addEventListener('scroll', function () {
-        sessionStorage.setItem('rebPreviewScroll', String(window.scrollY));
+        parent.postMessage({ type: 'reb-scroll', y: window.scrollY }, '*');
       });
       parent.postMessage({ type: 'reb-paged-done', pages: total }, '*');
     });
@@ -326,12 +332,46 @@ const REBAR_SNIPPETS = [
   { label: 'Tailwind Config', snippet: '<reb-tailwind></reb-tailwind>' }
 ];
 
+// Monaco is a singleton shared by every <Editor> mount, and the source editor
+// remounts whenever its tab is reopened; register completions only once or the
+// suggestion list gains a duplicate of every snippet per remount.
+let rebCompletionsRegistered = false;
+
+function registerRebCompletions(monaco: Monaco) {
+  if (rebCompletionsRegistered) return;
+  rebCompletionsRegistered = true;
+
+  monaco.languages.registerCompletionItemProvider('html', {
+    provideCompletionItems: (model: MonacoApi.editor.ITextModel, position: MonacoApi.Position) => {
+      const word = model.getWordUntilPosition(position);
+      const range = {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: word.startColumn,
+        endColumn: word.endColumn,
+      };
+
+      const suggestions = REBAR_SNIPPETS.map(snippet => ({
+        label: snippet.label,
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        insertText: snippet.snippet,
+        documentation: `Insert a ${snippet.label} component`,
+        range: range,
+      }));
+
+      return { suggestions };
+    }
+  });
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<EditorTab>('reb');
   const [previewZoom, setPreviewZoom] = useState(0.75);
   const [editorWidth, setEditorWidth] = useState(50);
   const [editorHeight, setEditorHeight] = useState(50);
   const isDragging = useRef(false);
+  // The container holding the editor and preview panes in split/stacked mode.
+  const panesRef = useRef<HTMLDivElement>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>(
     () => (localStorage.getItem('rebar_layout_mode') as LayoutMode | null) ?? 'split',
   );
@@ -350,6 +390,9 @@ function App() {
   const [renderError, setRenderError] = useState<string | null>(null);
   // Raw bytes of the most recent rendered PDF (Electron), for "Save PDF".
   const latestPdfBytes = useRef<Uint8Array | null>(null);
+  // Browser preview: the frame (to trust only its messages) and its last scroll position.
+  const previewFrame = useRef<HTMLIFrameElement>(null);
+  const previewScroll = useRef(0);
   
   const [rebCode, setRebCode] = useState(() => {
     const saved = localStorage.getItem('rebar_editor_code');
@@ -369,17 +412,27 @@ function App() {
   }, []);
 
   // Compilation is a pure function of the source once the compiler is ready.
-  const { compiled, compileError } = useMemo(() => {
+  const compileResult = useMemo((): { result: CompilationResult | null; error: string | null } => {
     if (!wasmReady) {
-      return { compiled: EMPTY_RESULT, compileError: initError };
+      return { result: null, error: initError };
     }
     try {
       const result = compile(rebCode);
-      return { compiled: result, compileError: result.execError ?? null };
+      return { result, error: result.execError ?? null };
     } catch (e) {
-      return { compiled: EMPTY_RESULT, compileError: e instanceof Error ? e.message : String(e) };
+      return { result: null, error: e instanceof Error ? e.message : String(e) };
     }
   }, [rebCode, wasmReady, initError]);
+
+  // Keep showing the last successful compilation while the source is mid-edit
+  // and briefly invalid (e.g. a half-typed field name), instead of blanking the
+  // preview and the compiled tabs; the error is still shown in the header.
+  const [lastGood, setLastGood] = useState<CompilationResult>(EMPTY_RESULT);
+  if (compileResult.result && compileResult.result !== lastGood) {
+    setLastGood(compileResult.result);
+  }
+  const compiled = compileResult.result ?? lastGood;
+  const compileError = compileResult.error;
 
   // Rebuild the paged preview document, debounced — re-running paged.js + Tailwind
   // on every keystroke would be wasteful, so we wait for a pause in editing.
@@ -388,11 +441,11 @@ function App() {
     let cancelled = false;
     const t = setTimeout(async () => {
       setRendering(true);
-      if (IS_ELECTRON && electronIpc) {
+      if (IS_ELECTRON && studioBridge) {
         // True PDF via Chromium's print engine (named landscape pages, etc.).
         try {
           const { html, footer } = await buildElectronDocument(compiled.previewHtml);
-          const data = (await electronIpc.invoke('render-pdf', { html, footer })) as Uint8Array;
+          const data = await studioBridge.renderPdf({ html, footer });
           if (cancelled) return;
           const bytes = new Uint8Array(data);
           latestPdfBytes.current = bytes;
@@ -409,7 +462,7 @@ function App() {
         }
       } else {
         // Browser fallback: paged.js layout (reports completion via postMessage).
-        setPreviewDoc(buildPagedDocument(compiled.previewHtml));
+        setPreviewDoc(buildPagedDocument(compiled.previewHtml, previewScroll.current));
       }
     }, 450);
     return () => {
@@ -422,7 +475,10 @@ function App() {
   // finishes laying out the document.
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
-      if (e.data?.type === 'reb-paged-done') {
+      if (!previewFrame.current || e.source !== previewFrame.current.contentWindow) return;
+      if (e.data?.type === 'reb-scroll') {
+        previewScroll.current = Number(e.data.y) || 0;
+      } else if (e.data?.type === 'reb-paged-done') {
         setPageCount(e.data.pages ?? 0);
         setRendering(false);
       }
@@ -439,28 +495,7 @@ function App() {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
-    // Register Auto-completion provider for reb- elements
-    monaco.languages.registerCompletionItemProvider('html', {
-      provideCompletionItems: (model: MonacoApi.editor.ITextModel, position: MonacoApi.Position) => {
-        const word = model.getWordUntilPosition(position);
-        const range = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,
-          endColumn: word.endColumn,
-        };
-
-        const suggestions = REBAR_SNIPPETS.map(snippet => ({
-          label: snippet.label,
-          kind: monaco.languages.CompletionItemKind.Snippet,
-          insertText: snippet.snippet,
-          documentation: `Insert a ${snippet.label} component`,
-          range: range,
-        }));
-
-        return { suggestions };
-      }
-    });
+    registerRebCompletions(monaco);
   };
 
   const insertSnippet = (snippet: string) => {
@@ -484,10 +519,11 @@ function App() {
     document.body.style.cursor = 'col-resize';
     
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      // 224px is the width of the left sidebar (w-56)
-      const containerWidth = window.innerWidth - 224; 
-      let newWidth = ((e.clientX - 224) / containerWidth) * 100;
+      if (!isDragging.current || !panesRef.current) return;
+      // Measure the editor+preview container itself: the sidebar is 224px open
+      // but 40px collapsed, so a hardcoded offset put the divider off the cursor.
+      const rect = panesRef.current.getBoundingClientRect();
+      let newWidth = ((e.clientX - rect.left) / rect.width) * 100;
       if (newWidth < 20) newWidth = 20;
       if (newWidth > 80) newWidth = 80;
       setEditorWidth(newWidth);
@@ -510,10 +546,9 @@ function App() {
     document.body.style.cursor = 'row-resize';
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      // 56px is the height of the top header (h-14)
-      const containerHeight = window.innerHeight - 56;
-      let newHeight = ((e.clientY - 56) / containerHeight) * 100;
+      if (!isDragging.current || !panesRef.current) return;
+      const rect = panesRef.current.getBoundingClientRect();
+      let newHeight = ((e.clientY - rect.top) / rect.height) * 100;
       if (newHeight < 20) newHeight = 20;
       if (newHeight > 80) newHeight = 80;
       setEditorHeight(newHeight);
@@ -577,9 +612,9 @@ function App() {
 
   // Save the current rendered PDF (Electron only) via a native save dialog.
   const handleSavePdf = async () => {
-    if (!electronIpc || !latestPdfBytes.current) return;
+    if (!studioBridge || !latestPdfBytes.current) return;
     try {
-      await electronIpc.invoke('save-pdf', latestPdfBytes.current);
+      await studioBridge.savePdf(latestPdfBytes.current);
     } catch (e) {
       setRenderError(e instanceof Error ? e.message : String(e));
     }
@@ -748,10 +783,13 @@ function App() {
           : previewDoc && (
               <iframe
                 title="Live PDF Preview"
+                ref={previewFrame}
                 srcDoc={previewDoc}
                 className="w-full h-full border-0"
                 style={{ zoom: previewZoom }}
-                sandbox="allow-scripts allow-same-origin"
+                // Scripts only: the template (user content) gets an opaque origin and cannot
+                // reach the editor, its storage, or the saved template.
+                sandbox="allow-scripts"
               />
             )}
         {rendering && (
@@ -896,7 +934,7 @@ function App() {
             <div className="flex-1 overflow-hidden">{mainView === 'editor' ? editorPane : previewPane}</div>
           </div>
         ) : layoutMode === 'stacked' ? (
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div ref={panesRef} className="flex-1 flex flex-col overflow-hidden">
             <div className="w-full overflow-hidden border-b border-brand-steel-light" style={{ height: `${editorHeight}%` }}>
               {editorPane}
             </div>
@@ -911,7 +949,9 @@ function App() {
             </div>
           </div>
         ) : (
-          <>
+          // Own flex container so the pane widths are percentages of the space
+          // left of the sidebar, not of the whole workspace (which overflowed).
+          <div ref={panesRef} className="flex-1 flex overflow-hidden">
             <div className="h-full overflow-hidden border-r border-brand-steel-light" style={{ width: `${editorWidth}%` }}>
               {editorPane}
             </div>
@@ -924,7 +964,7 @@ function App() {
             <div className="h-full overflow-hidden" style={{ width: `${100 - editorWidth}%` }}>
               {previewPane}
             </div>
-          </>
+          </div>
         )}
 
       </div>

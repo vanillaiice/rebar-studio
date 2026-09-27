@@ -10,6 +10,12 @@ const fs = require('fs');
 let renderWin = null;
 // Serialize renders so overlapping requests don't interrupt each other's load.
 let renderChain = Promise.resolve();
+// The editor window; IPC is accepted only from it.
+let mainWin = null;
+
+function fromMainWindow(event) {
+  return mainWin && !mainWin.isDestroyed() && event.sender === mainWin.webContents;
+}
 
 function getRenderWindow() {
   if (renderWin && !renderWin.isDestroyed()) return renderWin;
@@ -65,7 +71,8 @@ async function renderPdf({ html, footer }) {
   }
 }
 
-ipcMain.handle('render-pdf', (_event, payload) => {
+ipcMain.handle('render-pdf', (event, payload) => {
+  if (!fromMainWindow(event)) throw new Error('render-pdf refused: unknown sender');
   const result = renderChain.then(() => renderPdf(payload));
   // Keep the chain alive regardless of this render's outcome.
   renderChain = result.then(
@@ -76,7 +83,8 @@ ipcMain.handle('render-pdf', (_event, payload) => {
 });
 
 // Save the current preview's PDF bytes to disk via a native save dialog.
-ipcMain.handle('save-pdf', async (_event, bytes) => {
+ipcMain.handle('save-pdf', async (event, bytes) => {
+  if (!fromMainWindow(event)) throw new Error('save-pdf refused: unknown sender');
   const { canceled, filePath } = await dialog.showSaveDialog({
     title: 'Save PDF',
     defaultPath: 'template.pdf',
@@ -93,9 +101,13 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
+    // No Node in the page: templates are user content. The preload exposes only renderPdf and
+    // savePdf (electron/preload.cjs).
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      preload: path.join(__dirname, 'preload.cjs'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
     },
     autoHideMenuBar: true,
     title: 'Rebar Studio',
@@ -118,6 +130,11 @@ function createWindow() {
   // Tear down the hidden render window when the main window closes, otherwise it
   // keeps the app alive and 'window-all-closed' never fires.
   win.on('closed', destroyRenderWindow);
+
+  // The editor never navigates or opens windows; links in a template must not take it over.
+  win.webContents.on('will-navigate', (event) => event.preventDefault());
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWin = win;
 
   // Load the built React app directly from dist (no copy step).
   win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
