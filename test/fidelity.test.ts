@@ -8,7 +8,7 @@
 //
 //   FIDELITY=1 GOTENBERG_URL=http://127.0.0.1:3010 npm run test:fidelity
 //
-// Needs Gotenberg, Electron (with a display: xvfb-run in CI), pdftoppm and ImageMagick.
+// Needs Gotenberg, Electron (with a display: xvfb-run in CI), pdftoppm and ImageMagick (6 or 7).
 import { execFile } from 'node:child_process';
 import { mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
@@ -62,14 +62,21 @@ async function rasterize(pdf: string): Promise<string[]> {
   return (await readdir(dir)).filter((f) => f.startsWith(`${base}-`) && f.endsWith('.png')).sort().map((f) => join(dir, f));
 }
 
+// ImageMagick 7 has one `magick` command; version 6 (Ubuntu's) has compare and convert.
+let im7: Promise<boolean> | null = null;
+async function imagemagick(tool: 'compare' | 'convert', args: string[]) {
+  im7 ??= run('magick', ['-version']).then(() => true, () => false);
+  return (await im7) ? run('magick', tool === 'convert' ? args : [tool, ...args]) : run(tool, args);
+}
+
 // differingShare is the share of the page's ink (non-white pixels, in either rendering) that differs,
 // so a sparse page is held to the same standard as a full one.
 async function differingShare(a: string, b: string): Promise<number> {
   // compare exits 1 when the images differ; the count of differing pixels goes to stderr.
-  const result = await run('magick', ['compare', '-metric', 'AE', '-fuzz', '10%', a, b, 'null:']).catch((e) => e);
+  const result = await imagemagick('compare', ['-metric', 'AE', '-fuzz', '10%', a, b, 'null:']).catch((e) => e);
   const differing = parseFloat(String(result.stderr).trim().split(/\s/)[0]);
   const ink = async (image: string) =>
-    Number((await run('magick', [image, '-colorspace', 'Gray', '-threshold', '90%', '-negate', '-format', '%[fx:mean*w*h]', 'info:'])).stdout);
+    Number((await imagemagick('convert', [image, '-colorspace', 'Gray', '-threshold', '90%', '-negate', '-format', '%[fx:mean*w*h]', 'info:'])).stdout);
   return differing / Math.max(1, await ink(a), await ink(b));
 }
 

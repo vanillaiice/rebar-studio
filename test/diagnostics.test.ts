@@ -17,6 +17,12 @@ describe('editor markers', () => {
     expect(markers.map((m) => [m.severity, m.line])).toEqual([['warning', 1], ['warning', 2]]);
   });
 
+  it('places lint warnings on the binding and the declaring tag', async () => {
+    const source = '<p>{{.Name}}</p>\n<p>{{ .clinet }}</p>\n<reb-declare name="unused" label="Unused"></reb-declare>';
+    const markers = markersFor(source, (await testEngine()).compile(source));
+    expect(markers.map((m) => [m.message.split(' ')[0], m.line, m.column])).toEqual([['the', 2, 4], ['unused', 3, 1]]);
+  });
+
   it('places template syntax errors on the action', async () => {
     const source = '<p>ok</p>\n<p>{{ nosuchfunc .a }}</p>';
     const result = (await testEngine()).compile(source);

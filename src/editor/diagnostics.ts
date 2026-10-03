@@ -50,7 +50,11 @@ function placeDiagnostic(code: string, params: Record<string, string> | undefine
     case 'invalid_pattern':
     case 'missing_label':
     case 'show_if_unknown_field':
+    case 'unused_field':
+    case 'duplicate_field':
       return field ? fieldTag(field) : null;
+    case 'unknown_binding':
+      return params?.name ? new RegExp(`\\{\\{[^}]*\\.${escapeRegExp(params.name)}\\b[^}]*\\}\\}`) : null;
     case 'syntax': {
       // "template syntax: :12: function "foo" not defined": find the unknown name or the action.
       const quoted = /"([^"]+)"/.exec(params?.detail ?? '');

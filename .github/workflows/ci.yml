@@ -5,7 +5,8 @@ on:
   pull_request:
 
 jobs:
-  web:
+  check:
+    name: Lint, unit tests, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +18,62 @@ jobs:
           node-version: lts/*
           cache: npm
       - run: npm ci
-      - name: Lint
-        run: npm run lint
-      - name: Build (the engine WebAssembly from the pinned reb release, then the app)
+      - name: Engine (the pinned reb release, built to WebAssembly)
+        run: npm run build:wasm
+      - run: npm run lint
+      - name: Unit tests (against the real engine)
+        run: npm test
+      - name: Build (type check, then the app and its service worker)
         run: npm run build
+
+  e2e:
+    name: End to end (web and desktop)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Web build (fill, finalize, formulas, editor, files, offline)
+        run: npx playwright test --project=web
+      - name: Desktop app (PDF export, network isolation)
+        run: xvfb-run -a npx playwright test --project=electron
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+
+  fidelity:
+    name: PDF fidelity with Rebar (Gotenberg)
+    runs-on: ubuntu-latest
+    services:
+      gotenberg:
+        image: gotenberg/gotenberg:8
+        ports:
+          - 3000:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: sudo apt-get update && sudo apt-get install -y poppler-utils imagemagick xvfb
+      - run: npm ci
+      - run: npm run build:wasm
+      - name: Studio's PDF against Gotenberg's, page by page
+        env:
+          GOTENBERG_URL: http://127.0.0.1:3000
+        run: xvfb-run -a npm run test:fidelity

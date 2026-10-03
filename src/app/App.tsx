@@ -57,7 +57,11 @@ export default function App() {
     engine
       .ready()
       .then(() => ensureWorkspace())
-      .then(() => !cancelled && setState({ ready: true, error: null }))
+      .then(() => {
+        // Ask the browser to keep the workspace (it may decline; Settings shows the outcome).
+        void navigator.storage?.persist?.().catch(() => false);
+        if (!cancelled) setState({ ready: true, error: null });
+      })
       .catch((e) => !cancelled && setState({ ready: false, error: e instanceof Error ? e.message : String(e) }));
     return () => {
       cancelled = true;
