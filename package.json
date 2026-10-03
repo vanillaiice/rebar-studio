@@ -22,7 +22,7 @@
     "electron:dist": "npm run build && electron-builder --publish never",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:fidelity": "node scripts/fidelity.mjs",
+    "test:fidelity": "FIDELITY=1 vitest run test/fidelity.test.ts",
     "release": "npm run build && electron-builder --publish always"
   },
   "build": {
