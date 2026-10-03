@@ -5,6 +5,8 @@
   "description": "Rebar Studio - WYSIWYG editor for .reb form templates with a live PDF preview.",
   "author": "hblabs",
   "license": "GPL-3.0-or-later",
+  "repository": "github:vanillaiice/rebar-studio",
+  "homepage": "https://github.com/vanillaiice/rebar-studio",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {

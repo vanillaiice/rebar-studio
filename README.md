@@ -1,78 +1,56 @@
-# Rebar Template Editor
+# Rebar Studio
 
-This is a specialized standalone editor for authoring `.reb` Rebar Form Templates. It provides administrators with a WYSIWYG interface to construct custom HTML structures, inject JSON field schemas, and preview the PDF styling results in real-time.
+Rebar Studio is an offline desktop and web app for `.reb` form templates: author a template with a
+live PDF preview, fill documents from it, and render the filled documents to PDF. No account, no
+server and no network connection are needed.
 
-Built with **React**, **TypeScript**, and **Vite**, utilizing the Monaco Editor for syntax highlighting.
+It runs the [`reb` engine](https://github.com/vanillaiice/reb), the same engine Rebar's server runs,
+compiled to WebAssembly, so a template behaves the same in Studio and in Rebar.
 
-## Features
+The product plan is [docs/plan.md](docs/plan.md).
 
-- **Monaco Engine**: Code editor featuring HTML syntax highlighting and automatic JSON schema formatting.
-- **Component Snippets**: One-click insertion of Rebar-specific fields (text, select, photo grids, formula tables, signatures, page breaks, footers, and more).
-- **Live Compiler**: Compiles `.reb` source into Go-template HTML and a JSON field schema, viewable side-by-side in dedicated tabs. The compiler is the `reb` engine (`rebcompiler` + `rebrender`, the same code Rebar's server runs as `rebc`) compiled to WebAssembly, so output matches the PDF backend exactly.
-- **Live PDF Preview**: The preview *is* the final PDF. The executed template (filled with auto-generated sample data) is rendered to a real PDF:
-  - In the **desktop app** (`editor-electron`), it's rendered by Chromium's own print engine via `webContents.printToPDF` — the same engine the Gotenberg backend uses — so named landscape pages (`@page name { size: a4 landscape }`), `@page` sizes, backgrounds, and footers (page counters via Chromium's footer template) all match the production PDF exactly.
-  - In the **browser** (`npm run dev`), it falls back to [paged.js](https://pagedjs.org) (CSS Paged Media polyfill). This covers most layouts but cannot render named-page orientation — use the desktop app for full fidelity on those templates.
-- **Import / Export**: Load existing `.reb`, `.html`, or `.txt` files, and export the current source, compiled HTML, or JSON schema as a download. Work is auto-saved to the browser's local storage.
+## Development
 
-## Getting Started
+Requirements: Node.js 22+ and Go 1.26+ on your `PATH`.
 
-> **Requires Go** (1.26+) on your `PATH`. The live compiler is the
-> [`reb` engine](https://github.com/vanillaiice/reb) built to WebAssembly, at the
-> version pinned in `go.mod` (Go downloads it). `npm run dev` and `npm run build`
-> run `build:wasm` automatically (via `predev`/`prebuild`), emitting
-> `public/rebcompiler.wasm`, `public/wasm_exec.js` and the engine's browser
-> assets (all gitignored).
->
-> To move to a new engine release:
-> `go get -tool github.com/vanillaiice/reb/cmd/wasm@vX.Y.Z`. To build against a
-> local `reb` checkout while changing the engine, set `REB_DIR` to its path.
-
-1. Install dependencies:
 ```bash
 npm install
+npm run dev        # http://localhost:5173
+npm run build      # dist/
+npm run lint
 ```
 
-2. Run the development server (runs independently of the main Web Client):
-```bash
-npm run dev
-```
+`npm run dev` and `npm run build` first run `build:wasm` (`scripts/build-wasm.sh`), which builds the
+engine release pinned in `go.mod` to `public/rebcompiler.wasm` and copies the browser files it ships
+(`wasm_exec.js`, `tailwindcss.js`, `paged.polyfill.js`). These files are generated, not committed.
 
-The editor will be available at [http://localhost:5173](http://localhost:5173).
-
-## Compilation
-
-To bundle the editor for production:
-```bash
-npm run build
-```
-This generates static HTML/JS/CSS assets in the `/dist` directory.
+- Move to a new engine release: `go get -tool github.com/vanillaiice/reb/cmd/wasm@vX.Y.Z`.
+- Build against a local `reb` checkout while changing the engine: `REB_DIR=../reb npm run dev`.
 
 ## Desktop app (Electron)
 
-The same package ships a desktop build. The Electron main process lives in
-[`electron/main.cjs`](./electron/main.cjs) and loads `dist/` directly. In the
-desktop app the live preview renders the **real PDF** via Chromium's
-`printToPDF` (the same engine as the Gotenberg backend).
+The Electron main process is [`electron/main.cjs`](electron/main.cjs); it loads `dist/` from disk.
+The desktop app renders the preview as a real PDF with Chromium's `printToPDF`, the engine Rebar's
+PDF service (Gotenberg) uses, so named pages, `@page` sizes, headers and footers match Rebar's PDFs.
+In a browser, the preview is paginated by [paged.js](https://pagedjs.org) instead.
 
 ```bash
-npm run electron:dev    # build the web app, then launch Electron
-npm run electron:pack   # unpacked build (release/, fast, for testing)
-npm run electron:dist   # packaged installers (AppImage / nsis / dmg)
+npm run electron:dev    # build, then launch Electron
+npm run electron:pack   # unpacked build in release/ (fast, for testing)
+npm run electron:dist   # installers: AppImage, NSIS and portable, dmg
 ```
 
-> **Requires Go** on your `PATH` (the live compiler is built to WebAssembly from
-> the pinned `reb` engine during `build`).
+## Versions
+
+Releases are tagged `vX.Y.Z` with [gover](https://github.com/vanillaiice/gover) (`.gover`).
 
 ## License
 
-The Rebar Studio editor is licensed under the **GNU General Public License
-v3.0-or-later** — see [`LICENSE`](./LICENSE). Copyright (C) 2026 hblabs.
+Rebar Studio is licensed under the GNU General Public License v3.0 or later; see
+[LICENSE](LICENSE). Copyright (C) 2026 hblabs.
 
-The live compiler is built from the `reb` engine (`rebcompiler`, `rebrender`
-and `cmd/wasm`), which is GPL-3.0-or-later; it is included here as
-`rebcompiler.wasm`.
+The engine (`rebcompiler.wasm`) is built from [`reb`](https://github.com/vanillaiice/reb), also
+GPL-3.0-or-later. Bundled third-party components, all under GPL-compatible licenses:
 
-Bundled third-party components, all under GPL-compatible permissive licenses:
-
-- React, Monaco Editor, Tailwind CSS, paged.js, Electron — MIT
-- Go `wasm_exec.js` — BSD-3-Clause (the Go authors)
+- React, Monaco Editor, Tailwind CSS, paged.js, Electron: MIT
+- Go's `wasm_exec.js`: BSD-3-Clause (the Go authors)
