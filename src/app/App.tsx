@@ -16,6 +16,7 @@ import { SettingsView } from '../settings/SettingsView';
 import { Onboarding } from './Onboarding';
 import { OpenFileListener } from './OpenFileListener';
 import { UpdatePrompt } from './UpdatePrompt';
+import { useSettings } from './useSettings';
 import { href, useRoute, type Route } from './router';
 
 const EditorView = lazy(() => import('../editor/EditorView'));
@@ -50,6 +51,10 @@ function NavItem({ to, icon, label, active }: { to: Route; icon: ReactNode; labe
 
 export default function App() {
   const route = useRoute();
+  const settings = useSettings();
+  useEffect(() => {
+    document.documentElement.dataset.theme = settings.theme;
+  }, [settings.theme]);
   const [state, setState] = useState<{ ready: boolean; error: string | null }>({ ready: false, error: null });
 
   useEffect(() => {

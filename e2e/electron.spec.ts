@@ -57,7 +57,8 @@ test('opens exported PDFs after saving when the setting is on, never Studio file
     (globalThis as unknown as { opened: string[] }).opened = opened;
     shell.openPath = (async (target: string) => {
       opened.push(target);
-      return '';
+      // Model a desktop opener that keeps waiting while the external PDF viewer is running.
+      return await new Promise<string>(() => {});
     }) as never;
     let n = 0;
     dialog.showSaveDialog = (async (_win: unknown, options: { defaultPath?: string }) => ({
@@ -70,11 +71,24 @@ test('opens exported PDFs after saving when the setting is on, never Studio file
   await page.getByRole('button', { name: 'Export PDF' }).click();
   await expect.poll(opened, { timeout: 30_000 }).toHaveLength(1);
   expect((await opened())[0]).toMatch(/\.pdf$/);
+  await expect(page.getByText('Rendering the PDF…', { exact: true })).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Export PDF' })).toBeEnabled();
+
+  // Batch exports must also reply as soon as their files are saved.
+  await app.evaluate(({ dialog }, folder) => {
+    dialog.showOpenDialog = (async () => ({ canceled: false, filePaths: [folder] })) as never;
+  }, profile);
+  const batch = await page.evaluate(async () => {
+    const bridge = (window as unknown as { rebarStudio: { saveFiles(files: { name: string; bytes: Uint8Array }[], open: boolean): Promise<{ count: number }> } }).rebarStudio;
+    return await bridge.saveFiles([{ name: 'register.csv', bytes: new TextEncoder().encode('Reference\nD-1') }], true);
+  });
+  expect(batch.count).toBe(1);
+  await expect.poll(opened).toHaveLength(2);
 
   await page.getByRole('button', { name: 'More actions' }).click();
   await page.getByRole('menuitem', { name: 'Export .rebdoc' }).click();
   await page.waitForTimeout(1500);
-  expect(await opened()).toHaveLength(1); // the .rebdoc was saved, not opened
+  expect(await opened()).toHaveLength(2); // the .rebdoc was saved, not opened
 });
 
 test('renders templates without network access', async () => {

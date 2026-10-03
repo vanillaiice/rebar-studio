@@ -20,12 +20,13 @@ WebAssembly, so a template behaves and prints the same in Studio and in Rebar.
 
 | Area | What it does |
 |---|---|
-| Templates | Library with search, tags, archive, duplicate; a starter gallery of seven construction templates; versions (a template's next edit after a document uses it starts a new version, so documents never change) with restore; template images |
+| Templates | Library with search, tags, archive, duplicate; a starter gallery of ten construction templates; versions (a template's next edit after a document uses it starts a new version, so documents never change) with restore; template images |
 | Editor | Monaco with `.reb` snippets, the engine's errors and warnings as markers (unknown bindings, unused fields, invalid names and conditions), the compiled HTML, the schema, and the form the template produces |
 | Documents | The form built from the schema; show-if conditions, formulas and validation from the engine; autosave, undo; live preview; finalize, duplicate, reopen as a revision, move a draft to the latest template version |
 | PDF | Desktop: Chromium's `printToPDF` with the parameters Rebar sends Gotenberg (checked pixel by pixel, `npm run test:fidelity`). Browser: paged.js and the print dialog. Rendered pages cannot reach the network |
 | Files | `.reb`, `.rebpack` (a template with its images, the format Rebar imports), `.rebdoc` (one document, self-contained), `.rebbackup` (the workspace); the desktop app and the installed web app open them |
 | Offline | The web app installs as a PWA and works offline from its first visit; the desktop app is offline by nature |
+| Appearance | Amber, Ocean, Forest and Violet app themes, saved in Settings |
 | Updates | Desktop: electron-updater from GitHub Releases, stable or beta channel, never without asking. Web: a "reload" prompt |
 
 ## Development

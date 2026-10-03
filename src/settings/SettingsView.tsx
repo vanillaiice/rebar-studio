@@ -7,6 +7,7 @@
 import { DatabaseBackup, HardDriveDownload, ImagePlus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useSettings } from '../app/useSettings';
+import { THEMES, type Theme } from '../app/themes';
 import { Badge, Button, Label, TextInput } from '../components/ui';
 import { errorMessage, formatBytes, formatDate, inputClass } from '../components/format';
 import { useConfirm } from '../components/useConfirm';
@@ -155,6 +156,16 @@ export function SettingsView() {
         <p className="text-xs text-slate-400">Everything stays on this device; nothing is sent anywhere.</p>
       </header>
       <div className="mx-auto flex max-w-3xl flex-col gap-5 p-6">
+        <Section title="Appearance" description="Choose Studio’s colors.">
+          <Label label="Theme">
+            <select aria-label="Theme" className={`${inputClass} max-w-xs`} value={settings.theme} onChange={(e) => { const value = e.target.value as Theme; change((s) => { s.theme = value; }); }}>
+              {THEMES.map((theme) => <option key={theme.id} value={theme.id}>{theme.name}</option>)}
+            </select>
+          </Label>
+          <div className="flex gap-3" aria-hidden="true">
+            {THEMES.map((theme) => <span key={theme.id} title={theme.name} className="h-6 w-6 rounded-full" style={{ backgroundColor: theme.color }} />)}
+          </div>
+        </Section>
         <Section title="Profile" description="Templates print these as system values, so a template made here prints your details.">
           <SettingInput label="Organization" help={<code>{'{{.OrganizationName}}'}</code>} value={settings.profile.organizationName} onSave={(v) => change((s) => { s.profile.organizationName = v; })} />
           <SettingInput label="Your name" help={<code>{'{{.ReporterName}}'}</code>} value={settings.profile.authorName} onSave={(v) => change((s) => { s.profile.authorName = v; })} />

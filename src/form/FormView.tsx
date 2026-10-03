@@ -304,22 +304,16 @@ export function FormView({
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-8">
         {useSteps && (
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Step {current + 1} of {stepCount}
-          </p>
+          <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-brand-steel-dark py-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Step {current + 1} of {stepCount}</p>
+            <div className="flex gap-2">
+              <Button icon={<ChevronLeft size={16} />} disabled={current === 0} onClick={() => setStep(current - 1)}>Back</Button>
+              <Button variant="primary" disabled={current >= stepCount - 1} onClick={() => setStep(current + 1)}>Next <ChevronRight size={16} /></Button>
+            </div>
+          </div>
         )}
         {shown.map(render)}
         {fields.filter((f) => f.kind !== 'section').length === 0 && <p className="text-sm text-slate-500">This template has no fields to fill.</p>}
-        {useSteps && (
-          <div className="flex justify-between">
-            <Button icon={<ChevronLeft size={16} />} disabled={current === 0} onClick={() => setStep(current - 1)}>
-              Back
-            </Button>
-            <Button variant="primary" disabled={current >= stepCount - 1} onClick={() => setStep(current + 1)}>
-              Next <ChevronRight size={16} />
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );

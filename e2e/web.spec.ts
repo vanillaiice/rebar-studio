@@ -151,11 +151,44 @@ test('keeps settings changed with checkboxes and lists', async ({ page }) => {
   await expect(original).toBeChecked();
   await page.getByLabel('Longest edge').selectOption('1600');
   await expect(page.getByLabel('Longest edge')).toHaveValue('1600');
+  for (const [theme, accent] of [['ocean', '#7dd3fc'], ['forest', '#6ee7b7'], ['violet', '#c4b5fd'], ['amber', '#facc15']]) {
+    await page.getByLabel('Theme', { exact: true }).selectOption(theme);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--color-brand-amber').trim())).toBe(accent);
+  }
+  await page.getByLabel('Theme', { exact: true }).selectOption('ocean');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'ocean');
   await page.reload();
+  await expect(page.getByLabel('Theme', { exact: true })).toHaveValue('ocean');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'ocean');
   await expect(page.getByLabel(/Keep original photos/)).toBeChecked();
   await expect(page.getByLabel('Longest edge')).toHaveValue('1600');
   // The desktop-only setting is not offered in a browser.
   await expect(page.getByLabel('Open files automatically after saving them')).toHaveCount(0);
+});
+
+test('replaces table photos through the thumbnail and keeps them after reload', async ({ page }) => {
+  await page.getByRole('button', { name: 'New template' }).click();
+  await page.getByRole('button', { name: /Snag list/ }).click();
+  await page.getByRole('button', { name: 'New document' }).click();
+  await page.getByLabel('Area or unit').fill('Level 3');
+  await page.getByRole('button', { name: 'Add row' }).click();
+  const photo = page.locator('td').filter({ has: page.getByRole('button', { name: 'Add Photo', exact: true }) });
+  const choosing = page.waitForEvent('filechooser');
+  await photo.getByRole('button').click();
+  await (await choosing).setFiles('public/pwa-192.png');
+  const replace = page.getByRole('button', { name: 'Replace Photo', exact: true });
+  await expect(replace.getByRole('img', { name: 'Photo', exact: true })).toBeVisible();
+  await expect(replace.locator('svg')).toHaveCount(0);
+  const original = await replace.getByRole('img').getAttribute('src');
+  const replacing = page.waitForEvent('filechooser');
+  await replace.click();
+  await (await replacing).setFiles('public/pwa-512.png');
+  await expect(replace.getByRole('img')).not.toHaveAttribute('src', original!);
+  await expect(page.getByText('Saved', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Replace Photo', exact: true }).getByRole('img')).toBeVisible();
+  await expect(page.frameLocator('iframe[title="Preview"]').locator('tbody img').first()).toBeVisible({ timeout: 30_000 });
 });
 
 test('teaches with live examples and hands out the AI guide', async ({ page }) => {

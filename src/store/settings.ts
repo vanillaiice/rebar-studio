@@ -3,11 +3,13 @@
 
 import { db } from './db';
 import type { Settings } from './types';
+import { THEMES } from '../app/themes';
 
 const KEY = 'settings';
 
 export function defaultSettings(): Settings {
   return {
+    theme: 'amber',
     profile: { organizationName: '', authorName: '', address: '', logoAssetId: null },
     numbering: { prefix: 'D-', next: 1 },
     fileNamePattern: '{template}-{reference}-{date}',
@@ -28,6 +30,7 @@ export async function getSettings(): Promise<Settings> {
   return {
     ...defaults,
     ...stored,
+    theme: THEMES.some((theme) => theme.id === stored.theme) ? stored.theme : defaults.theme,
     profile: { ...defaults.profile, ...stored.profile },
     numbering: { ...defaults.numbering, ...stored.numbering },
     updates: { ...defaults.updates, ...stored.updates },

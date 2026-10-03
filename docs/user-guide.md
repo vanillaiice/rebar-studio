@@ -78,6 +78,7 @@ The desktop app opens these files when you double-click them.
 
 ## Settings
 
+- **Appearance**: choose Amber, Ocean, Forest or Violet for Studio’s colors.
 - **Profile**: your organization's name and logo, and your name; templates print them as
   `{{.OrganizationName}}`, `{{.OrganizationLogo}}` and `{{.ReporterName}}`.
 - **Documents**: the reference prefix and next number, and how exported files are named. In the

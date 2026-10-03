@@ -116,6 +116,7 @@ export const Preview = forwardRef<PreviewHandle, Props>(function Preview({ html,
         bytes={pdf}
         zoom={zoom}
         onPages={(pages) => report.current?.({ rendering: false, pages, error: null })}
+        onError={(error) => report.current?.({ rendering: false, pages: 0, error })}
       />
     ) : null;
   }

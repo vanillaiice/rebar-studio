@@ -9,8 +9,33 @@
 }
 
 :root {
-  --background: #020617;
+  color-scheme: dark;
+  --background: var(--color-brand-steel-dark);
   --foreground: #f8fafc;
+}
+
+:root[data-theme="ocean"] {
+  --color-brand-amber: #7dd3fc;
+  --color-brand-amber-dark: #0284c7;
+  --color-brand-steel: #0c2134;
+  --color-brand-steel-light: #16354c;
+  --color-brand-steel-dark: #061321;
+}
+
+:root[data-theme="forest"] {
+  --color-brand-amber: #6ee7b7;
+  --color-brand-amber-dark: #059669;
+  --color-brand-steel: #102a26;
+  --color-brand-steel-light: #1c3e37;
+  --color-brand-steel-dark: #071a17;
+}
+
+:root[data-theme="violet"] {
+  --color-brand-amber: #c4b5fd;
+  --color-brand-amber-dark: #7c3aed;
+  --color-brand-steel: #211a35;
+  --color-brand-steel-light: #352a50;
+  --color-brand-steel-dark: #100c1c;
 }
 
 body {
@@ -33,10 +58,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(250, 204, 21, 0.25);
+  background: color-mix(in srgb, var(--color-brand-amber) 25%, transparent);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(250, 204, 21, 0.55);
+  background: color-mix(in srgb, var(--color-brand-amber) 55%, transparent);
 }

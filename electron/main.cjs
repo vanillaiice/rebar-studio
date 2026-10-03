@@ -73,9 +73,16 @@ ipcMain.handle('render-pdf', (event, request) => {
 // would import them into Studio again) or anything that runs.
 const OPEN_AFTER_SAVE = ['.pdf', '.csv', '.json', '.html'];
 
-async function openSaved(target) {
-  const error = await shell.openPath(target);
-  if (error) dialog.showErrorBox('Rebar Studio', `${path.basename(target)} was saved but could not be opened: ${error}`);
+function openSaved(target) {
+  // Some desktop openers keep their promise pending while the external app runs. The save IPC
+  // must reply once the file is written, independently of that app's lifetime.
+  setImmediate(() => {
+    void shell.openPath(target).then((error) => {
+      if (error) throw new Error(error);
+    }).catch((error) => {
+      dialog.showErrorBox('Rebar Studio', `${path.basename(target)} was saved but could not be opened: ${error.message}`);
+    });
+  });
 }
 
 ipcMain.handle('save-file', async (event, { name, bytes, filters, open }) => {
@@ -86,7 +93,7 @@ ipcMain.handle('save-file', async (event, { name, bytes, filters, open }) => {
   });
   if (canceled || !filePath) return false;
   await fs.promises.writeFile(filePath, Buffer.from(bytes));
-  if (open === true && OPEN_AFTER_SAVE.includes(path.extname(filePath).toLowerCase())) await openSaved(filePath);
+  if (open === true && OPEN_AFTER_SAVE.includes(path.extname(filePath).toLowerCase())) openSaved(filePath);
   return true;
 });
 
@@ -106,7 +113,7 @@ ipcMain.handle('save-files', async (event, files, open) => {
     for (let n = 2; fs.existsSync(target); n++) target = path.join(folder, `${base.slice(0, base.length - ext.length)} (${n})${ext}`);
     await fs.promises.writeFile(target, Buffer.from(file.bytes));
   }
-  if (open === true) await openSaved(folder);
+  if (open === true) openSaved(folder);
   return { folder, count: files.length };
 });
 

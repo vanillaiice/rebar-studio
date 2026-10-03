@@ -141,16 +141,17 @@ export function TableField({
       const url = files.url(row[column.key]);
       return (
         <div className="flex items-center gap-2">
-          {url && <img src={url} alt={column.label} className={`h-12 rounded ${column.kind === 'signature' ? 'bg-white px-1' : 'w-16 object-cover'}`} />}
+          {readOnly && url && <img src={url} alt={column.label} className={`h-12 rounded ${column.kind === 'signature' ? 'bg-white px-1' : 'w-16 object-cover'}`} />}
           {!readOnly && (
             <button
               type="button"
               data-cell={id}
               aria-label={url ? `Replace ${column.label}` : `Add ${column.label}`}
               onClick={() => (column.kind === 'image' ? pickImage(index, column.key) : setSigning({ row: index, column: column.key }))}
-              className="rounded-md bg-brand-steel-light p-2 text-slate-200 hover:bg-slate-700"
+              title={url ? `Replace ${column.label}` : `Add ${column.label}`}
+              className={`rounded-md text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-brand-amber ${url ? 'overflow-hidden hover:opacity-80' : 'bg-brand-steel-light p-2 hover:bg-slate-700'}`}
             >
-              {column.kind === 'image' ? <ImagePlus size={16} /> : <PenLine size={16} />}
+              {url ? <img src={url} alt={column.label} className={`h-12 rounded ${column.kind === 'signature' ? 'bg-white px-1' : 'w-16 object-cover'}`} /> : column.kind === 'image' ? <ImagePlus size={16} /> : <PenLine size={16} />}
             </button>
           )}
         </div>

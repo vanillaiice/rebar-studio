@@ -21,12 +21,14 @@ function pdfjs(): Promise<PdfJs> {
 // CSS pixels per PDF point at 100%: a PDF point is 1/72 inch, a CSS pixel 1/96 inch.
 const CSS_PER_POINT = 96 / 72;
 
-export function PdfPages({ bytes, zoom, onPages }: { bytes: Uint8Array; zoom: number; onPages?(count: number): void }) {
+export function PdfPages({ bytes, zoom, onPages, onError }: { bytes: Uint8Array; zoom: number; onPages?(count: number): void; onError?(message: string): void }) {
   const host = useRef<HTMLDivElement>(null);
   const report = useRef(onPages);
+  const reportError = useRef(onError);
   useEffect(() => {
     report.current = onPages;
-  }, [onPages]);
+    reportError.current = onError;
+  }, [onPages, onError]);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,8 +36,8 @@ export function PdfPages({ bytes, zoom, onPages }: { bytes: Uint8Array; zoom: nu
       const lib = await pdfjs();
       // pdf.js takes the buffer over: give it a copy, the caller keeps the PDF for saving.
       const task = lib.getDocument({ data: bytes.slice() });
-      const document = await task.promise;
       try {
+        const document = await task.promise;
         const pixels = window.devicePixelRatio || 1;
         const pages: HTMLElement[] = [];
         for (let number = 1; number <= document.numPages; number++) {
@@ -63,7 +65,9 @@ export function PdfPages({ bytes, zoom, onPages }: { bytes: Uint8Array; zoom: nu
       } finally {
         void task.destroy();
       }
-    })();
+    })().catch((error) => {
+      if (!cancelled) reportError.current?.(error instanceof Error ? error.message : String(error));
+    });
     return () => {
       cancelled = true;
     };

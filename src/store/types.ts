@@ -5,6 +5,7 @@
 // template version, so editing a template never changes existing documents.
 
 import type { Answers, Schema } from '../engine/types';
+import type { Theme } from '../app/themes';
 
 export interface Template {
   id: string;
@@ -87,6 +88,7 @@ export interface Asset {
 }
 
 export interface Settings {
+  theme: Theme;
   profile: {
     organizationName: string;
     authorName: string; // {{.ReporterName}}
