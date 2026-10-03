@@ -92,10 +92,35 @@ test('renders templates without network access', async () => {
     await page.getByRole('button', { name: 'Import' }).click();
     await (await choosing).setFiles({ name: 'leak.reb', mimeType: 'text/plain', buffer: Buffer.from(source) });
     await page.getByRole('heading', { name: 'leak' }).click();
-    await expect(page.locator('iframe[title="PDF preview"]')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByLabel('PDF preview').locator('canvas').first()).toBeVisible({ timeout: 60_000 });
     await page.waitForTimeout(1500);
     expect(hits).toEqual([]);
   } finally {
     server.close();
   }
+});
+
+test('updates the PDF preview in place, keeping the reader where they were', async () => {
+  const source = `<p>Page one</p><reb-pagebreak></reb-pagebreak><p>Page two</p><reb-pagebreak></reb-pagebreak>
+<p>Last page: <reb-text name="note" label="Note"></reb-text></p>`;
+  const choosing = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Import' }).click();
+  await (await choosing).setFiles({ name: 'three pages.reb', mimeType: 'text/plain', buffer: Buffer.from(source) });
+  await page.getByRole('listitem').filter({ has: page.getByRole('heading', { name: 'three pages' }) }).getByRole('button', { name: 'Fill' }).click();
+  await expect(page.getByLabel('Note')).toBeVisible();
+  if (await page.getByRole('button', { name: 'Preview', exact: true }).isVisible()) await page.getByRole('button', { name: 'Preview', exact: true }).click();
+  const pages = page.getByLabel('PDF preview');
+  await expect(pages.locator('canvas')).toHaveCount(3, { timeout: 60_000 });
+
+  await pages.evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+    (el.querySelector('canvas') as HTMLCanvasElement & { old?: boolean }).old = true;
+  });
+  const before = await pages.evaluate((el) => el.scrollTop);
+  expect(before).toBeGreaterThan(0);
+  await page.getByLabel('Note').fill('Changed');
+  // The new pages replace the old ones (a fresh first canvas), at the same place.
+  await expect.poll(() => pages.evaluate((el) => !(el.querySelector('canvas') as { old?: boolean }).old), { timeout: 30_000 }).toBe(true);
+  expect(await pages.evaluate((el) => el.scrollTop)).toBe(before);
+  await expect(pages.locator('canvas')).toHaveCount(3);
 });

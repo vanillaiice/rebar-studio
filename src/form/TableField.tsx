@@ -173,7 +173,7 @@ export function TableField({
   };
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-white/10">
+    <div className="relative overflow-x-auto rounded-lg border border-white/10">
       <table ref={table} className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">

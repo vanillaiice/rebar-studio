@@ -63,6 +63,14 @@ test('computes table formulas and totals in the form and the preview', async ({ 
   await expect(page.locator('td span', { hasText: '3500.00' })).toBeVisible();
   await expect(page.locator('tfoot')).toContainText('3500.50');
   await expect(page.frameLocator('iframe[title="Preview"]').getByText('QAR 3,500.50').first()).toBeVisible({ timeout: 30_000 });
+
+  // An update never blanks the preview: the shown page stays until the next one is paginated.
+  await page.getByLabel('Qty', { exact: true }).first().fill('11');
+  for (let i = 0; i < 15; i++) {
+    expect(await page.frameLocator('iframe[title="Preview"]').locator('.pagedjs_page').count()).toBeGreaterThan(0);
+    await page.waitForTimeout(100);
+  }
+  await expect(page.frameLocator('iframe[title="Preview"]').getByText('QAR 3,850.50').first()).toBeVisible({ timeout: 30_000 });
 });
 
 test('marks template errors in the editor', async ({ page }) => {
@@ -148,4 +156,22 @@ test('keeps settings changed with checkboxes and lists', async ({ page }) => {
   await expect(page.getByLabel('Longest edge')).toHaveValue('1600');
   // The desktop-only setting is not offered in a browser.
   await expect(page.getByLabel('Open files automatically after saving them')).toHaveCount(0);
+});
+
+test('teaches with live examples and hands out the AI guide', async ({ page }) => {
+  await page.getByRole('link', { name: 'Reference' }).click();
+  await expect(page.getByRole('heading', { name: 'Write your first template', level: 1 })).toBeVisible();
+  const printed = page.frameLocator('iframe[title="Printed page"]').first();
+  await expect(printed.getByText('Visited by Mariam Haddad')).toBeVisible({ timeout: 30_000 });
+  await page.getByLabel('Visitor').first().fill('Omar Saleh');
+  await expect(printed.getByText('Visited by Omar Saleh')).toBeVisible();
+
+  const downloading = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download the AI guide' }).click();
+  const guide = await readFile(await (await downloading).path(), 'utf8');
+  expect(guide).toContain('vanillaiice@tutanota.com');
+  expect(guide).toContain('<reb-table');
+
+  await page.getByRole('button', { name: /The full specification/ }).click();
+  await expect(page.getByRole('heading', { name: /Custom Form Elements/ })).toBeVisible();
 });

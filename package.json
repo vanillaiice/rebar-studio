@@ -139,6 +139,7 @@
     "marked": "^18.0.14",
     "monaco-editor": "^0.55.1",
     "monaco-vim": "^0.4.4",
+    "pdfjs-dist": "^6.3.289",
     "postcss": "^8.5.15",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

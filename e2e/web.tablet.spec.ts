@@ -54,6 +54,8 @@ test.describe('phone', () => {
     await start(page);
     await page.getByRole('button', { name: 'Fill' }).first().tap();
     await expect(page.getByText('Step 1 of 3')).toBeVisible();
+    const sideways = () => page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+    expect(await sideways()).toBe(false);
     await page.getByLabel('Work type').selectOption('Electrical isolation');
     await page.getByLabel('Location').fill('Substation 2');
     await page.getByRole('button', { name: 'Next' }).tap();
@@ -69,5 +71,15 @@ test.describe('phone', () => {
     await page.getByRole('button', { name: 'Finalize' }).tap();
     await page.getByRole('dialog', { name: 'Finalize this document?' }).getByRole('button', { name: 'Finalize' }).tap();
     await expect(page.getByText(/SHA-256 [0-9a-f]{16}/)).toBeVisible({ timeout: 30_000 });
+  });
+
+  test('reads the reference and fills a table without scrolling sideways', async ({ page }) => {
+    await page.goto('/');
+    await start(page);
+    await page.getByRole('link', { name: 'Reference' }).click();
+    await expect(page.getByRole('heading', { name: 'Tables and totals' })).toBeAttached();
+    await page.getByRole('heading', { name: 'Tables and totals' }).scrollIntoViewIfNeeded();
+    await expect(page.frameLocator('iframe[title="Printed page"]').nth(4).getByText('QAR 18,200.00')).toBeVisible({ timeout: 30_000 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 });
