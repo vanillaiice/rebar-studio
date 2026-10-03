@@ -24,6 +24,20 @@ const { createTemplate, currentVersion, getTemplate, listTemplates, setTemplateA
 const { createDocument, finalizeDocument, getDocument, listDocuments, saveAnswers } = await import('../src/store/documents');
 const { getAsset, putAsset } = await import('../src/store/assets');
 const { assetRef } = await import('../src/store/types');
+const { renderDocument } = await import('../src/render/renderDocument');
+const { getSettings } = await import('../src/store/settings');
+
+// A document rendered, with its files' bytes; file names carry asset ids, which an import renews.
+async function rendered(id: string) {
+  const document = (await getDocument(id))!;
+  const version = await currentVersion(document.templateId).then(async (current) =>
+    current.id === document.templateVersionId ? current : (await import('../src/store/templates')).getVersion(document.templateVersionId).then((v) => v!),
+  );
+  const out = await renderDocument(document, version, (await getTemplate(document.templateId))!, await getSettings());
+  const anonymous = (name: string) => name.replace(/asset-[0-9a-f-]{36}/g, 'asset-ID');
+  const files = await Promise.all([...out.files].map(async ([name, blob]) => [anonymous(name), [...new Uint8Array(await blob.arrayBuffer())]] as const));
+  return { html: anonymous(out.html), files: files.sort(([a], [b]) => a.localeCompare(b)) };
+}
 
 const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]);
 const SOURCE = '<img src="logo.png"><reb-text name="site" label="Site"></reb-text><reb-photogrid name="photos" label="Photos"></reb-photogrid>';
@@ -81,9 +95,14 @@ describe('.rebdoc', () => {
     await finalizeDocument(doc.id, new Blob(['%PDF-1.7'], { type: 'application/pdf' }), 'abc123');
     const final = (await getDocument(doc.id))!;
     const bytes = await buildRebdoc(final, (await currentVersion(t.id)), (await getTemplate(t.id))!);
+    const before = await rendered(doc.id);
+    expect(before.html).toContain('North');
+    expect(before.files.map(([name]) => name)).toEqual(['asset-ID.png', 'logo.png']);
 
     await useDatabase(`formats-other-${run}`);
     const imported = await importRebdoc(bytes);
+    // The same page, with the same files: a .rebdoc re-renders identically.
+    expect(await rendered(imported.id)).toEqual(before);
     expect(imported.status).toBe('final');
     expect(imported.pdfHash).toBe('abc123');
     expect(imported.answers.site).toBe('North');
