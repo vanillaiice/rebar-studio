@@ -18,3 +18,5 @@ fi
 install -m 644 "$(go env GOROOT)/lib/wasm/wasm_exec.js" "$out/wasm_exec.js"
 install -m 644 "$reb/assets/tailwindcss.js" "$out/tailwindcss.js"
 install -m 644 "$reb/assets/paged.polyfill.js" "$out/paged.polyfill.js"
+# The specification of this engine release, for the in-app reference.
+install -m 644 "$reb/docs/specification.md" "$out/specification.md"

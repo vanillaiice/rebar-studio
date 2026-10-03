@@ -20,6 +20,7 @@ public/rebcompiler.wasm
 public/wasm_exec.js
 public/tailwindcss.js
 public/paged.polyfill.js
+public/specification.md
 
 # Editor directories and files
 .vscode/*
@@ -31,3 +32,7 @@ public/paged.polyfill.js
 *.njsproj
 *.sln
 *.sw?
+
+# Test output
+test-results/
+playwright-report/

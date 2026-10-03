@@ -1,80 +1,65 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 hblabs — Rebar Studio (Electron main process)
-const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
-const path = require('path');
-const os = require('os');
+// Copyright (C) 2026 hblabs
+//
+// Rebar Studio's Electron main process: the app window, the PDF renderer, files and updates.
+//
+// The app window loads dist/ from disk with no Node access; electron/preload.cjs is its only bridge.
+// PDFs are printed in a separate hidden window that is network-isolated (plan section 9): templates
+// are third-party content and documents hold personal data, so a rendered page can load only the
+// files written next to it.
+const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
 const fs = require('fs');
+const path = require('path');
+const { createRenderer } = require('./render.cjs');
 
-// A single reusable hidden window renders every preview, avoiding the churn (and
-// potential handle leaks) of creating/destroying a BrowserWindow per keystroke.
-let renderWin = null;
-// Serialize renders so overlapping requests don't interrupt each other's load.
-let renderChain = Promise.resolve();
-// The editor window; IPC is accepted only from it.
+// A separate profile (tests, or a second workspace): REBAR_STUDIO_USER_DATA=/some/folder.
+if (process.env.REBAR_STUDIO_USER_DATA) app.setPath('userData', process.env.REBAR_STUDIO_USER_DATA);
+
+const OPENABLE = ['.reb', '.rebpack', '.rebdoc'];
+const MAX_OPEN_BYTES = 500 * 1024 * 1024;
+
 let mainWin = null;
+let renderChain = Promise.resolve();
+let rendererReady = false;
+const pendingOpens = [];
 
 function fromMainWindow(event) {
   return mainWin && !mainWin.isDestroyed() && event.sender === mainWin.webContents;
 }
 
-function getRenderWindow() {
-  if (renderWin && !renderWin.isDestroyed()) return renderWin;
-  renderWin = new BrowserWindow({
-    show: false,
-    width: 1240,
-    height: 1754,
-    skipTaskbar: true,
-    webPreferences: { offscreen: false, javascript: true },
-  });
-  return renderWin;
+// --- Files opened from the system ------------------------------------------------------------------
+
+function queueOpen(filePath) {
+  if (!filePath || !OPENABLE.includes(path.extname(filePath).toLowerCase())) return;
+  pendingOpens.push(filePath);
+  flushOpens();
 }
 
-function destroyRenderWindow() {
-  if (renderWin && !renderWin.isDestroyed()) renderWin.destroy();
-  renderWin = null;
-}
-
-// Render a standalone HTML document to PDF using Chromium's own print engine —
-// the same engine the Gotenberg backend uses — so the editor's live preview is
-// the real final PDF (named landscape pages, @page sizes, backgrounds, footers).
-async function renderPdf({ html, footer }) {
-  const win = getRenderWindow();
-
-  // Inlined assets mean no external/relative URLs, but we use a temp file rather
-  // than a data: URL to avoid navigation length limits on large documents.
-  const tmpFile = path.join(os.tmpdir(), `reb-preview-${Date.now()}-${Math.random().toString(36).slice(2)}.html`);
-
-  try {
-    fs.writeFileSync(tmpFile, html);
-    await win.loadFile(tmpFile);
-
-    // Wait until the in-page script signals Tailwind has finished generating CSS
-    // (fonts ready + <head> mutations settled), so layout is final before print.
-    const deadline = Date.now() + 6000;
-    while (Date.now() < deadline) {
-      const ready = await win.webContents
-        .executeJavaScript('window.__rebReady === true')
-        .catch(() => false);
-      if (ready) break;
-      await new Promise((r) => setTimeout(r, 100));
+function flushOpens() {
+  if (!rendererReady || !mainWin || mainWin.isDestroyed()) return;
+  while (pendingOpens.length) {
+    const filePath = pendingOpens.shift();
+    try {
+      if (fs.statSync(filePath).size > MAX_OPEN_BYTES) throw new Error('too large');
+      mainWin.webContents.send('open-file', { name: path.basename(filePath), bytes: new Uint8Array(fs.readFileSync(filePath)) });
+    } catch (e) {
+      dialog.showErrorBox('Rebar Studio', `${path.basename(filePath)} could not be opened: ${e.message}`);
     }
-
-    return await win.webContents.printToPDF({
-      printBackground: true,
-      preferCSSPageSize: true,
-      displayHeaderFooter: Boolean(footer),
-      headerTemplate: '<span></span>',
-      footerTemplate: footer || '<span></span>',
-    }); // Buffer -> arrives as a Uint8Array in the renderer
-  } finally {
-    fs.promises.unlink(tmpFile).catch(() => {});
   }
 }
 
-ipcMain.handle('render-pdf', (event, payload) => {
-  if (!fromMainWindow(event)) throw new Error('render-pdf refused: unknown sender');
-  const result = renderChain.then(() => renderPdf(payload));
-  // Keep the chain alive regardless of this render's outcome.
+function filesInArgs(argv) {
+  return argv.slice(app.isPackaged ? 1 : 2).filter((arg) => !arg.startsWith('-') && OPENABLE.includes(path.extname(arg).toLowerCase()));
+}
+
+// --- The PDF renderer (electron/render.cjs) ---------------------------------------------------------
+
+const renderer = createRenderer();
+
+ipcMain.handle('render-pdf', (event, request) => {
+  if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
+  // One render at a time: the render window holds one page.
+  const result = renderChain.then(() => renderer.renderPdf(request));
   renderChain = result.then(
     () => {},
     () => {},
@@ -82,27 +67,103 @@ ipcMain.handle('render-pdf', (event, payload) => {
   return result;
 });
 
-// Save the current preview's PDF bytes to disk via a native save dialog.
-ipcMain.handle('save-pdf', async (event, bytes) => {
-  if (!fromMainWindow(event)) throw new Error('save-pdf refused: unknown sender');
-  const { canceled, filePath } = await dialog.showSaveDialog({
-    title: 'Save PDF',
-    defaultPath: 'template.pdf',
-    filters: [{ name: 'PDF Document', extensions: ['pdf'] }],
+// --- Saving files ----------------------------------------------------------------------------------
+
+ipcMain.handle('save-file', async (event, { name, bytes, filters }) => {
+  if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
+  const { canceled, filePath } = await dialog.showSaveDialog(mainWin, {
+    defaultPath: path.basename(String(name || 'file')),
+    filters: Array.isArray(filters) && filters.length ? filters : undefined,
   });
   if (canceled || !filePath) return false;
   await fs.promises.writeFile(filePath, Buffer.from(bytes));
   return true;
 });
 
-app.on('before-quit', destroyRenderWindow);
+// Several files into a folder the person picks; an existing name gets " (2)", " (3)"...
+ipcMain.handle('save-files', async (event, files) => {
+  if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWin, {
+    title: 'Choose a folder',
+    properties: ['openDirectory', 'createDirectory'],
+  });
+  if (canceled || !filePaths[0]) return null;
+  const folder = filePaths[0];
+  for (const file of files) {
+    const base = path.basename(String(file.name || 'file'));
+    const ext = path.extname(base);
+    let target = path.join(folder, base);
+    for (let n = 2; fs.existsSync(target); n++) target = path.join(folder, `${base.slice(0, base.length - ext.length)} (${n})${ext}`);
+    await fs.promises.writeFile(target, Buffer.from(file.bytes));
+  }
+  return { folder, count: files.length };
+});
+
+ipcMain.handle('get-version', () => app.getVersion());
+
+ipcMain.on('renderer-ready', (event) => {
+  if (!fromMainWindow(event)) return;
+  rendererReady = true;
+  flushOpens();
+});
+
+// --- Updates (electron-updater, from GitHub Releases) ----------------------------------------------
+
+let updater = null;
+
+function sendUpdate(status) {
+  if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send('update-status', status);
+}
+
+function getUpdater() {
+  if (updater) return updater;
+  updater = require('electron-updater').autoUpdater;
+  updater.autoDownload = true;
+  updater.autoInstallOnAppQuit = true;
+  updater.on('checking-for-update', () => sendUpdate({ state: 'checking' }));
+  updater.on('update-available', (info) => sendUpdate({ state: 'available', version: info.version }));
+  updater.on('update-not-available', () => sendUpdate({ state: 'none' }));
+  updater.on('download-progress', (progress) => sendUpdate({ state: 'downloading', percent: progress.percent }));
+  updater.on('update-downloaded', (info) => sendUpdate({ state: 'ready', version: info.version }));
+  updater.on('error', (error) => sendUpdate({ state: 'error', message: String(error && error.message ? error.message : error) }));
+  return updater;
+}
+
+ipcMain.handle('check-updates', async (event, channel) => {
+  if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
+  if (!app.isPackaged) return { state: 'unsupported', message: 'Updates work in installed builds only.' };
+  if (process.platform === 'linux' && !process.env.APPIMAGE) {
+    return { state: 'unsupported', message: 'This build updates through your package manager.' };
+  }
+  const u = getUpdater();
+  u.channel = channel === 'beta' ? 'beta' : 'latest';
+  u.allowPrerelease = channel === 'beta';
+  try {
+    const result = await u.checkForUpdates();
+    if (!result || !result.isUpdateAvailable) return { state: 'none' };
+    return { state: 'available', version: result.updateInfo.version };
+  } catch (e) {
+    return { state: 'error', message: e.message };
+  }
+});
+
+ipcMain.handle('install-update', (event) => {
+  if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
+  getUpdater().quitAndInstall();
+});
+
+// --- The app window --------------------------------------------------------------------------------
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    // No Node in the page: templates are user content. The preload exposes only renderPdf and
-    // savePdf (electron/preload.cjs).
+    width: 1400,
+    height: 900,
+    minWidth: 720,
+    minHeight: 500,
+    backgroundColor: '#020617',
+    icon: path.join(__dirname, '..', 'build', 'icon.png'),
+    // No Node in the page: imported templates are third-party content. The preload exposes only
+    // the calls in electron/preload.cjs.
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       nodeIntegration: false,
@@ -113,78 +174,72 @@ function createWindow() {
     title: 'Rebar Studio',
   });
 
-  // Manually handle paste to bypass Linux hidden menu accelerator bugs.
-  // We ONLY intercept 'v' (paste) because Monaco relies on a trusted native paste event to read the clipboard.
-  // Monaco natively handles Ctrl+C, Ctrl+X, Ctrl+Z, and Ctrl+A via its internal keybindings,
-  // so we must NOT intercept those, otherwise we break Monaco's internal editor state!
+  // Linux hides the menu, whose accelerators then miss Ctrl+V: paste through the web contents.
+  // Only paste: Monaco handles copy, cut, undo and select-all itself.
   win.webContents.on('before-input-event', (event, input) => {
-    const isMac = process.platform === 'darwin';
-    const modifier = isMac ? input.meta : input.control;
-
-    if (modifier && input.type === 'keyDown' && input.key.toLowerCase() === 'v') {
+    const modifier = process.platform === 'darwin' ? input.meta : input.control;
+    if (modifier && input.type === 'keyDown' && input.key.toLowerCase() === 'v' && !input.shift) {
       win.webContents.paste();
       event.preventDefault();
     }
   });
 
-  // Tear down the hidden render window when the main window closes, otherwise it
-  // keeps the app alive and 'window-all-closed' never fires.
-  win.on('closed', destroyRenderWindow);
-
-  // The editor never navigates or opens windows; links in a template must not take it over.
+  // The app routes in the URL fragment and never navigates or opens windows.
   win.webContents.on('will-navigate', (event) => event.preventDefault());
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  mainWin = win;
+  win.webContents.session.setPermissionRequestHandler((_wc, permission, callback) =>
+    callback(['clipboard-sanitized-write', 'clipboard-read', 'persistent-storage'].includes(permission)),
+  );
 
-  // Load the built React app directly from dist (no copy step).
+  win.on('closed', () => {
+    renderer.destroy();
+    mainWin = null;
+    rendererReady = false;
+  });
+  mainWin = win;
   win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
 }
 
-app.whenReady().then(() => {
-  // Create default menu to ensure keyboard shortcuts (copy/paste) work natively
-  const template = [
-    {
-      label: 'Edit',
-      submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'delete' },
-        { type: 'separator' },
-        { role: 'selectAll' },
-      ],
-    },
-    {
-      label: 'View',
-      submenu: [
-        { role: 'reload' },
-        { role: 'forceReload' },
-        { role: 'toggleDevTools' },
-        { type: 'separator' },
-        { role: 'resetZoom' },
-        { role: 'zoomIn' },
-        { role: 'zoomOut' },
-        { type: 'separator' },
-        { role: 'togglefullscreen' },
-      ],
-    },
-  ];
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
-
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+} else {
+  // A second launch (double-clicking a file) hands its files to this one.
+  app.on('second-instance', (_event, argv) => {
+    filesInArgs(argv).forEach(queueOpen);
+    if (mainWin) {
+      if (mainWin.isMinimized()) mainWin.restore();
+      mainWin.focus();
     }
   });
-});
+  // macOS delivers opened files as events, possibly before the app is ready.
+  app.on('open-file', (event, filePath) => {
+    event.preventDefault();
+    queueOpen(filePath);
+  });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
+  app.whenReady().then(() => {
+    Menu.setApplicationMenu(
+      Menu.buildFromTemplate([
+        ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
+        {
+          label: 'Edit',
+          submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'delete' }, { type: 'separator' }, { role: 'selectAll' }],
+        },
+        {
+          label: 'View',
+          submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }, { type: 'separator' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' }, { role: 'togglefullscreen' }],
+        },
+      ]),
+    );
+    createWindow();
+    filesInArgs(process.argv).forEach(queueOpen);
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+
+  app.on('before-quit', () => renderer.destroy());
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit();
+  });
+}
