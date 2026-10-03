@@ -49,7 +49,7 @@ browsers (`wasm_exec.js`, `tailwindcss.js`, `paged.polyfill.js`, `specification.
 are generated, not committed.
 
 - Move to a new engine release: `go get -tool github.com/vanillaiice/reb/cmd/wasm@vX.Y.Z`.
-- Build against a local `reb` checkout while changing the engine: `REB_DIR=../reb npm run dev`.
+- Build against a local `reb` checkout while changing the engine: `REB_DIR=../compiler npm run dev`.
 
 Playwright drives its own Chromium by default (`npx playwright install chromium`); set
 `CHROMIUM_PATH=/usr/bin/chromium` to use the system one.
