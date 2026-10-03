@@ -23,14 +23,35 @@ warns. The Release workflow signs when these repository secrets exist, and build
 
 | Secret | For |
 |---|---|
-| `CSC_LINK`, `CSC_KEY_PASSWORD` | the signing certificate (a base64 `.p12`) and its password: a Developer ID Application certificate on macOS, an OV/EV code signing certificate on Windows |
+| `CSC_LINK`, `CSC_KEY_PASSWORD` | the signing certificate (a base64 `.p12`) and its password. On macOS, the Developer ID Application certificate. On Windows only for an old certificate with an exportable key (see below) |
 | `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` | macOS notarization (electron-builder notarizes when they are set) |
 
-Costs and options (plan section 10): an Apple Developer membership is about 99 USD a year; for
-Windows, Azure Trusted Signing (about 10 USD a month; configure `win.azureSignOptions` in
-`package.json`) or an OV certificate. SignPath signs open-source projects for free. A reasonable order
-is unsigned betas with install notes, then Windows signing, then macOS notarization before a public
-v1.
+### Windows options
+
+Since June 2023, certificate authorities keep Windows code signing keys on a hardware token or a cloud
+HSM, so a new certificate never comes as a `.pfx` file for `CSC_LINK`. The choices:
+
+| Option | Cost | How it plugs in |
+|---|---|---|
+| **SignPath Foundation** | free for open source | Apply with the public repository; they review the project. Signing becomes a step in the Release workflow (their GitHub Action), and the key stays with them. The installers must be built in CI from the public repository, not locally. |
+| **Azure Trusted Signing** (renamed Artifact Signing) | about 10 USD a month | Microsoft's service. Configure `win.azureSignOptions` in `package.json` and give the `windows-latest` job the Azure credentials (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`). Identity validation is limited to organizations and to individuals in some countries (mainly the US and Canada); check eligibility first. |
+| **OV certificate from a CA** (Certum, Sectigo, SSL.com, DigiCert) | about 50 to 400 USD a year | Certum's open source certificate is the cheapest. The key lives on a USB token (sign locally) or a cloud HSM such as SSL.com eSigner or DigiCert KeyLocker (sign in CI, through the provider's tool or a custom `win.signtoolOptions.sign` hook, e.g. with jsign). |
+
+EV certificates no longer skip SmartScreen's reputation check (since 2024), so OV is enough: a signed
+build shows the publisher's name, and the warning fades as downloads build reputation.
+
+### macOS
+
+An Apple Developer membership (about 99 USD a year) gives the Developer ID Application certificate
+(`CSC_LINK`, `CSC_KEY_PASSWORD`, exported as a `.p12`) and notarization (`APPLE_*`). The Release
+workflow does both once the secrets are set.
+
+### Order
+
+Unsigned betas with install notes, then Windows signing (SignPath first, as the project is open
+source; Azure or a Certum certificate otherwise), then macOS notarization before a public v1.
+
+### Electron fuses
 
 The Electron fuses (`package.json`, `build.electronFuses`) are set at packaging time: no running as
 Node, no `NODE_OPTIONS` or inspector flags, and the app loads only from its integrity-checked asar.
