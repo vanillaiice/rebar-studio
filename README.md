@@ -16,12 +16,16 @@ Built with **React**, **TypeScript**, and **Vite**, utilizing the Monaco Editor 
 
 ## Getting Started
 
-> **Requires Go** (1.26+) on your `PATH` and a checkout of the `reb` engine
-> repository next to the `rebar` repository (`../../reb` from here; set `REB_DIR`
-> to use another path). The live compiler is built from it to WebAssembly.
-> `npm run dev` and `npm run build` run `build:wasm` automatically (via
-> `predev`/`prebuild`), emitting `public/rebcompiler.wasm` and
-> `public/wasm_exec.js` (both gitignored).
+> **Requires Go** (1.26+) on your `PATH`. The live compiler is the
+> [`reb` engine](https://github.com/vanillaiice/reb) built to WebAssembly, at the
+> version pinned in `go.mod` (Go downloads it). `npm run dev` and `npm run build`
+> run `build:wasm` automatically (via `predev`/`prebuild`), emitting
+> `public/rebcompiler.wasm`, `public/wasm_exec.js` and the engine's browser
+> assets (all gitignored).
+>
+> To move to a new engine release:
+> `go get -tool github.com/vanillaiice/reb/cmd/wasm@vX.Y.Z`. To build against a
+> local `reb` checkout while changing the engine, set `REB_DIR` to its path.
 
 1. Install dependencies:
 ```bash
@@ -56,8 +60,8 @@ npm run electron:pack   # unpacked build (release/, fast, for testing)
 npm run electron:dist   # packaged installers (AppImage / nsis / dmg)
 ```
 
-> **Requires Go** on your `PATH` and the `reb` checkout (the live compiler is
-> built to WebAssembly from it during `build`).
+> **Requires Go** on your `PATH` (the live compiler is built to WebAssembly from
+> the pinned `reb` engine during `build`).
 
 ## License
 
