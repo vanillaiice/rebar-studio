@@ -15,7 +15,7 @@ function listen(channel, callback) {
 contextBridge.exposeInMainWorld('rebarStudio', {
   renderPdf: (request) => ipcRenderer.invoke('render-pdf', request),
   saveFile: (request) => ipcRenderer.invoke('save-file', request),
-  saveFiles: (files) => ipcRenderer.invoke('save-files', files),
+  saveFiles: (files, open) => ipcRenderer.invoke('save-files', files, open),
   onOpenFile: (callback) => {
     const stop = listen('open-file', callback);
     ipcRenderer.send('renderer-ready');

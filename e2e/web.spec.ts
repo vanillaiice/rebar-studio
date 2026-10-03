@@ -135,3 +135,17 @@ test('works offline once loaded', async ({ page, context }) => {
   await page.getByLabel('Location').fill('Offline site');
   await expect(page.getByText('Saved')).toBeVisible();
 });
+
+test('keeps settings changed with checkboxes and lists', async ({ page }) => {
+  await page.getByRole('link', { name: 'Settings' }).click();
+  const original = page.getByLabel(/Keep original photos/);
+  await original.click();
+  await expect(original).toBeChecked();
+  await page.getByLabel('Longest edge').selectOption('1600');
+  await expect(page.getByLabel('Longest edge')).toHaveValue('1600');
+  await page.reload();
+  await expect(page.getByLabel(/Keep original photos/)).toBeChecked();
+  await expect(page.getByLabel('Longest edge')).toHaveValue('1600');
+  // The desktop-only setting is not offered in a browser.
+  await expect(page.getByLabel('Open files automatically after saving them')).toHaveCount(0);
+});

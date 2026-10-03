@@ -7,7 +7,7 @@
 // PDFs are printed in a separate hidden window that is network-isolated (plan section 9): templates
 // are third-party content and documents hold personal data, so a rendered page can load only the
 // files written next to it.
-const { app, BrowserWindow, Menu, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { createRenderer } = require('./render.cjs');
@@ -69,7 +69,16 @@ ipcMain.handle('render-pdf', (event, request) => {
 
 // --- Saving files ----------------------------------------------------------------------------------
 
-ipcMain.handle('save-file', async (event, { name, bytes, filters }) => {
+// What "Open after saving" may open: documents to look at, never Studio's own formats (opening those
+// would import them into Studio again) or anything that runs.
+const OPEN_AFTER_SAVE = ['.pdf', '.csv', '.json', '.html'];
+
+async function openSaved(target) {
+  const error = await shell.openPath(target);
+  if (error) dialog.showErrorBox('Rebar Studio', `${path.basename(target)} was saved but could not be opened: ${error}`);
+}
+
+ipcMain.handle('save-file', async (event, { name, bytes, filters, open }) => {
   if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
   const { canceled, filePath } = await dialog.showSaveDialog(mainWin, {
     defaultPath: path.basename(String(name || 'file')),
@@ -77,11 +86,12 @@ ipcMain.handle('save-file', async (event, { name, bytes, filters }) => {
   });
   if (canceled || !filePath) return false;
   await fs.promises.writeFile(filePath, Buffer.from(bytes));
+  if (open === true && OPEN_AFTER_SAVE.includes(path.extname(filePath).toLowerCase())) await openSaved(filePath);
   return true;
 });
 
 // Several files into a folder the person picks; an existing name gets " (2)", " (3)"...
-ipcMain.handle('save-files', async (event, files) => {
+ipcMain.handle('save-files', async (event, files, open) => {
   if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWin, {
     title: 'Choose a folder',
@@ -96,6 +106,7 @@ ipcMain.handle('save-files', async (event, files) => {
     for (let n = 2; fs.existsSync(target); n++) target = path.join(folder, `${base.slice(0, base.length - ext.length)} (${n})${ext}`);
     await fs.promises.writeFile(target, Buffer.from(file.bytes));
   }
+  if (open === true) await openSaved(folder);
   return { folder, count: files.length };
 });
 

@@ -11,6 +11,7 @@ export function defaultSettings(): Settings {
     profile: { organizationName: '', authorName: '', address: '', logoAssetId: null },
     numbering: { prefix: 'D-', next: 1 },
     fileNamePattern: '{template}-{reference}-{date}',
+    openAfterSave: false,
     photos: { maxEdge: 2000, keepOriginal: false },
     lastBackupAt: null,
     backupReminderDays: 7,

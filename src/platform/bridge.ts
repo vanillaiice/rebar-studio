@@ -4,6 +4,8 @@
 // What the app asks of its shell. The desktop app's preload (electron/preload.cjs) exposes
 // window.rebarStudio; in a browser the same calls fall back to downloads and file inputs.
 
+import { getSettings } from '../store/settings';
+
 export interface PdfRequest {
   html: string;
   header: string;
@@ -16,6 +18,7 @@ export interface SaveRequest {
   name: string;
   bytes: Uint8Array;
   filters?: { name: string; extensions: string[] }[];
+  open?: boolean; // open the saved file with the system's app (desktop)
 }
 
 export interface OpenedFile {
@@ -33,7 +36,7 @@ export interface UpdateStatus {
 interface DesktopBridge {
   renderPdf(request: PdfRequest): Promise<Uint8Array>;
   saveFile(request: SaveRequest): Promise<boolean>;
-  saveFiles(files: { name: string; bytes: Uint8Array }[]): Promise<{ folder: string; count: number } | null>;
+  saveFiles(files: { name: string; bytes: Uint8Array }[], open?: boolean): Promise<{ folder: string; count: number } | null>;
   onOpenFile(callback: (file: OpenedFile) => void): () => void;
   getVersion(): Promise<string>;
   checkForUpdates(channel: 'stable' | 'beta'): Promise<UpdateStatus>;
@@ -57,16 +60,27 @@ function download(name: string, blob: Blob) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+// Files worth opening once saved (Settings, "Open after saving"). Studio's own formats are left
+// alone: opening them would hand them back to Studio, which would import them again.
+export const OPEN_AFTER_SAVE = ['pdf', 'csv', 'json', 'html'];
+
+async function openAfterSave(): Promise<boolean> {
+  return (await getSettings()).openAfterSave;
+}
+
 // saveFile asks where to save on the desktop and downloads in a browser. False when cancelled.
 export async function saveFile(request: SaveRequest & { type?: string }): Promise<boolean> {
-  if (desktop) return desktop.saveFile(request);
+  if (desktop) {
+    const extension = request.name.split('.').pop()?.toLowerCase() ?? '';
+    return desktop.saveFile({ ...request, open: OPEN_AFTER_SAVE.includes(extension) && (await openAfterSave()) });
+  }
   download(request.name, new Blob([request.bytes as BlobPart], { type: request.type ?? 'application/octet-stream' }));
   return true;
 }
 
 // saveFiles writes several files into a folder the user picks (desktop); a browser gets one zip.
 export async function saveFiles(files: { name: string; bytes: Uint8Array }[], zipName: string): Promise<boolean> {
-  if (desktop) return (await desktop.saveFiles(files)) !== null;
+  if (desktop) return (await desktop.saveFiles(files, await openAfterSave())) !== null;
   const { zipSync } = await import('fflate');
   const zipped = zipSync(Object.fromEntries(files.map((f) => [f.name, f.bytes])), { level: 0 });
   download(zipName, new Blob([zipped as BlobPart], { type: 'application/zip' }));

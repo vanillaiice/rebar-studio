@@ -43,6 +43,40 @@ test('finalizes a document to a PDF and exports it', async () => {
   expect(pdf).toMatch(/\/Type\s*\/Page\b/);
 });
 
+test('opens exported PDFs after saving when the setting is on, never Studio files', async () => {
+  await page.getByRole('link', { name: 'Settings' }).click();
+  const setting = page.getByLabel('Open files automatically after saving them');
+  await setting.click();
+  await expect(setting).toBeChecked(); // saved, then shown (settings are written before they show)
+  await page.getByRole('link', { name: 'Templates' }).click();
+  await page.getByRole('button', { name: 'Fill' }).first().click();
+  await page.getByLabel('Location').fill('Opened site');
+
+  await app.evaluate(({ dialog, shell }, folder) => {
+    const opened: string[] = [];
+    (globalThis as unknown as { opened: string[] }).opened = opened;
+    shell.openPath = (async (target: string) => {
+      opened.push(target);
+      return '';
+    }) as never;
+    let n = 0;
+    dialog.showSaveDialog = (async (_win: unknown, options: { defaultPath?: string }) => ({
+      canceled: false,
+      filePath: `${folder}/${++n}-${options.defaultPath}`,
+    })) as never;
+  }, profile);
+  const opened = () => app.evaluate(() => (globalThis as unknown as { opened: string[] }).opened);
+
+  await page.getByRole('button', { name: 'Export PDF' }).click();
+  await expect.poll(opened, { timeout: 30_000 }).toHaveLength(1);
+  expect((await opened())[0]).toMatch(/\.pdf$/);
+
+  await page.getByRole('button', { name: 'More actions' }).click();
+  await page.getByRole('menuitem', { name: 'Export .rebdoc' }).click();
+  await page.waitForTimeout(1500);
+  expect(await opened()).toHaveLength(1); // the .rebdoc was saved, not opened
+});
+
 test('renders templates without network access', async () => {
   const hits: string[] = [];
   const server = createServer((request, response) => {

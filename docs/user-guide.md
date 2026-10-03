@@ -80,7 +80,9 @@ The desktop app opens these files when you double-click them.
 
 - **Profile**: your organization's name and logo, and your name; templates print them as
   `{{.OrganizationName}}`, `{{.OrganizationLogo}}` and `{{.ReporterName}}`.
-- **Documents**: the reference prefix and next number, and how exported files are named.
+- **Documents**: the reference prefix and next number, and how exported files are named. In the
+  desktop app, **Open files automatically after saving them** opens exported PDFs and registers in
+  their usual app (and the folder after a batch export); Studio's own files are only saved.
 - **Photos**: the size photos are reduced to (or keep the originals).
 - **Storage and backups**: what your workspace uses, **Back up now** and **Restore a backup**
   (restoring replaces everything). A browser can clear a site's data: keep backups, and install the

@@ -61,6 +61,8 @@ export function SettingsView() {
   const [appVersion, setAppVersion] = useState(__APP_VERSION__);
   const [update, setUpdate] = useState<UpdateStatus>({ state: 'idle' });
 
+  // Read an input's value before calling change: the change is saved asynchronously, and by then React
+  // has reset a controlled input to the value it last rendered.
   const change = (fn: (s: Settings) => void) => void updateSettings(fn).catch((e) => toast(errorMessage(e), 'error'));
 
   useEffect(() => {
@@ -181,16 +183,25 @@ export function SettingsView() {
             value={settings.fileNamePattern}
             onSave={(v) => change((s) => { s.fileNamePattern = v.trim() || '{template}-{reference}-{date}'; })}
           />
+          {IS_DESKTOP && (
+            <label className="flex items-start gap-3 text-sm text-slate-300">
+              <input type="checkbox" checked={settings.openAfterSave} onChange={(e) => { const value = e.target.checked; change((s) => { s.openAfterSave = value; }); }} className="mt-0.5 h-4 w-4 accent-brand-amber" />
+              <span>
+                Open files automatically after saving them
+                <span className="block text-xs text-slate-500">PDFs, registers (CSV, JSON) and HTML open in their usual app; a batch export opens its folder.</span>
+              </span>
+            </label>
+          )}
         </Section>
 
         <Section title="Photos" description="Photos are resized and compressed on this device before they are stored.">
           <Label label="Longest edge">
-            <select className={`${inputClass} max-w-xs`} value={settings.photos.maxEdge} onChange={(e) => change((s) => { s.photos.maxEdge = Number(e.target.value); })}>
+            <select className={`${inputClass} max-w-xs`} value={settings.photos.maxEdge} onChange={(e) => { const value = Number(e.target.value); change((s) => { s.photos.maxEdge = value; }); }}>
               {[1200, 1600, 2000, 3000].map((n) => <option key={n} value={n}>{n} px{n === 2000 ? ' (recommended)' : ''}</option>)}
             </select>
           </Label>
           <label className="flex items-center gap-3 text-sm text-slate-300">
-            <input type="checkbox" checked={settings.photos.keepOriginal} onChange={(e) => change((s) => { s.photos.keepOriginal = e.target.checked; })} className="h-4 w-4 accent-brand-amber" />
+            <input type="checkbox" checked={settings.photos.keepOriginal} onChange={(e) => { const value = e.target.checked; change((s) => { s.photos.keepOriginal = value; }); }} className="h-4 w-4 accent-brand-amber" />
             Keep original photos (larger files, full resolution)
           </label>
         </Section>
@@ -209,7 +220,7 @@ export function SettingsView() {
             <Button icon={<DatabaseBackup size={15} />} onClick={restore}>Restore a backup</Button>
           </div>
           <Label label="Remind me to back up after">
-            <select className={`${inputClass} max-w-xs`} value={settings.backupReminderDays} onChange={(e) => change((s) => { s.backupReminderDays = Number(e.target.value); })}>
+            <select className={`${inputClass} max-w-xs`} value={settings.backupReminderDays} onChange={(e) => { const value = Number(e.target.value); change((s) => { s.backupReminderDays = value; }); }}>
               {[[3, '3 days'], [7, '1 week'], [14, '2 weeks'], [30, '1 month'], [0, 'Never remind me']].map(([n, label]) => <option key={n} value={n}>{label}</option>)}
             </select>
           </Label>
@@ -218,11 +229,11 @@ export function SettingsView() {
         {IS_DESKTOP && (
           <Section title="Updates">
             <label className="flex items-center gap-3 text-sm text-slate-300">
-              <input type="checkbox" checked={settings.updates.autoCheck} onChange={(e) => change((s) => { s.updates.autoCheck = e.target.checked; })} className="h-4 w-4 accent-brand-amber" />
+              <input type="checkbox" checked={settings.updates.autoCheck} onChange={(e) => { const value = e.target.checked; change((s) => { s.updates.autoCheck = value; }); }} className="h-4 w-4 accent-brand-amber" />
               Check for updates when Studio starts
             </label>
             <Label label="Channel">
-              <select className={`${inputClass} max-w-xs`} value={settings.updates.channel} onChange={(e) => change((s) => { s.updates.channel = e.target.value as 'stable' | 'beta'; })}>
+              <select className={`${inputClass} max-w-xs`} value={settings.updates.channel} onChange={(e) => { const value = e.target.value as 'stable' | 'beta'; change((s) => { s.updates.channel = value; }); }}>
                 <option value="stable">Stable</option>
                 <option value="beta">Beta (earlier, less tested)</option>
               </select>

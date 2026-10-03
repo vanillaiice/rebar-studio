@@ -95,6 +95,7 @@ export interface Settings {
   };
   numbering: { prefix: string; next: number };
   fileNamePattern: string;
+  openAfterSave: boolean; // desktop: open exported PDFs, registers and folders once saved
   photos: { maxEdge: number; keepOriginal: boolean };
   lastBackupAt: string | null;
   backupReminderDays: number;
