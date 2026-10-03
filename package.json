@@ -8,7 +8,7 @@
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
-    "build:wasm": "GOOS=js GOARCH=wasm go build -C ../server -o ../rebar-studio/public/rebcompiler.wasm ./cmd/wasm && cp \"$(go env GOROOT)/lib/wasm/wasm_exec.js\" public/wasm_exec.js && cp ../server/pkg/pdf/tailwindcss.js public/tailwindcss.js && cp node_modules/pagedjs/dist/paged.polyfill.min.js public/paged.polyfill.js",
+    "build:wasm": "REB=\"${REB_DIR:-../../reb}\" && GOOS=js GOARCH=wasm go build -C \"$REB\" -trimpath -ldflags=\"-s -w\" -o \"$PWD/public/rebcompiler.wasm\" ./cmd/wasm && cp \"$(go env GOROOT)/lib/wasm/wasm_exec.js\" public/wasm_exec.js && cp \"$REB/assets/tailwindcss.js\" public/tailwindcss.js && cp \"$REB/assets/paged.polyfill.js\" public/paged.polyfill.js",
     "predev": "npm run build:wasm",
     "dev": "vite",
     "prebuild": "npm run build:wasm",
@@ -25,10 +25,7 @@
     "directories": {
       "output": "release"
     },
-    "files": [
-      "dist/**/*",
-      "electron/**/*"
-    ],
+    "files": ["dist/**/*", "electron/**/*"],
     "linux": {
       "target": ["AppImage"],
       "category": "Development",
@@ -67,7 +64,6 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
-    "pagedjs": "^0.4.3",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",

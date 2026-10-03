@@ -8,7 +8,7 @@ Built with **React**, **TypeScript**, and **Vite**, utilizing the Monaco Editor 
 
 - **Monaco Engine**: Code editor featuring HTML syntax highlighting and automatic JSON schema formatting.
 - **Component Snippets**: One-click insertion of Rebar-specific fields (text, select, photo grids, formula tables, signatures, page breaks, footers, and more).
-- **Live Compiler**: Compiles `.reb` source into Go-template HTML and a JSON field schema, viewable side-by-side in dedicated tabs. The compiler is the actual server-side Go pipeline (`pkg/rebcompiler` + `pkg/rebrender`) compiled to WebAssembly, so output matches the API/PDF backend exactly.
+- **Live Compiler**: Compiles `.reb` source into Go-template HTML and a JSON field schema, viewable side-by-side in dedicated tabs. The compiler is the `reb` engine (`rebcompiler` + `rebrender`, the same code Rebar's server runs as `rebc`) compiled to WebAssembly, so output matches the PDF backend exactly.
 - **Live PDF Preview**: The preview *is* the final PDF. The executed template (filled with auto-generated sample data) is rendered to a real PDF:
   - In the **desktop app** (`editor-electron`), it's rendered by Chromium's own print engine via `webContents.printToPDF` — the same engine the Gotenberg backend uses — so named landscape pages (`@page name { size: a4 landscape }`), `@page` sizes, backgrounds, and footers (page counters via Chromium's footer template) all match the production PDF exactly.
   - In the **browser** (`npm run dev`), it falls back to [paged.js](https://pagedjs.org) (CSS Paged Media polyfill). This covers most layouts but cannot render named-page orientation — use the desktop app for full fidelity on those templates.
@@ -16,10 +16,12 @@ Built with **React**, **TypeScript**, and **Vite**, utilizing the Monaco Editor 
 
 ## Getting Started
 
-> **Requires Go** (1.26+) on your `PATH`. The live compiler is built from the
-> `../server` Go module to WebAssembly. `npm run dev` and `npm run build` run
-> `build:wasm` automatically (via `predev`/`prebuild`), emitting
-> `public/rebcompiler.wasm` and `public/wasm_exec.js` (both gitignored).
+> **Requires Go** (1.26+) on your `PATH` and a checkout of the `reb` engine
+> repository next to the `rebar` repository (`../../reb` from here; set `REB_DIR`
+> to use another path). The live compiler is built from it to WebAssembly.
+> `npm run dev` and `npm run build` run `build:wasm` automatically (via
+> `predev`/`prebuild`), emitting `public/rebcompiler.wasm` and
+> `public/wasm_exec.js` (both gitignored).
 
 1. Install dependencies:
 ```bash
@@ -54,17 +56,17 @@ npm run electron:pack   # unpacked build (release/, fast, for testing)
 npm run electron:dist   # packaged installers (AppImage / nsis / dmg)
 ```
 
-> **Requires Go** on your `PATH` (the live compiler is built to WebAssembly from
-> the `../server` module during `build`).
+> **Requires Go** on your `PATH` and the `reb` checkout (the live compiler is
+> built to WebAssembly from it during `build`).
 
 ## License
 
 The Rebar Studio editor is licensed under the **GNU General Public License
 v3.0-or-later** — see [`LICENSE`](./LICENSE). Copyright (C) 2026 hblabs.
 
-The live compiler is built from the rebar server packages `pkg/rebcompiler`,
-`pkg/rebrender`, and `cmd/wasm`, which are dual-licensed `BUSL-1.1 OR
-GPL-3.0-or-later`; they are included here (as `rebcompiler.wasm`) under the GPL.
+The live compiler is built from the `reb` engine (`rebcompiler`, `rebrender`
+and `cmd/wasm`), which is GPL-3.0-or-later; it is included here as
+`rebcompiler.wasm`.
 
 Bundled third-party components, all under GPL-compatible permissive licenses:
 

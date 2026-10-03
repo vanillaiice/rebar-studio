@@ -163,6 +163,25 @@ function buildPagedDocument(previewHtml: string, scrollY = 0): string {
     el.remove();
   });
 
+  // paged.js takes page breaks from stylesheets only, while <reb-pagebreak> compiles to an
+  // inline page-break-after and templates write inline breaks too (Chromium honours both):
+  // mark them with classes that the stylesheet below breaks on.
+  let hasBreaks = false;
+  doc.querySelectorAll('[style]').forEach((el) => {
+    const style = el.getAttribute('style') ?? '';
+    if (/(?:^|;)\s*(?:page-)?break-before\s*:\s*(?:always|page)/i.test(style)) {
+      el.classList.add('reb-break-before');
+      hasBreaks = true;
+    }
+    if (/(?:^|;)\s*(?:page-)?break-after\s*:\s*(?:always|page)/i.test(style)) {
+      el.classList.add('reb-break-after');
+      hasBreaks = true;
+    }
+  });
+  const breakCss = hasBreaks
+    ? '.reb-break-before { break-before: page; } .reb-break-after { break-after: page; }'
+    : '';
+
   // Respect a template-specified page size (e.g. `@page { size: A4 landscape }`).
   // Only default to A4 when the template sets no size (paged.js defaults to US
   // Letter), mirroring the backend's preferCssPageSize behavior.
@@ -189,6 +208,7 @@ function buildPagedDocument(previewHtml: string, scrollY = 0): string {
 </style>
 ${userStyles}
 <style>
+  ${breakCss}
   /* Footer margin box last, so its margin-bottom survives author margin rules. */
   ${footerCss}
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
