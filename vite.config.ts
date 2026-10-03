@@ -14,6 +14,9 @@ export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(version) },
   worker: { format: 'es' },
+  // The chunks over Vite's 500 kB default are Monaco (loaded with the editor), its language workers
+  // and pdf.js's worker: already split out and lazy, and not splittable further.
+  build: { chunkSizeWarningLimit: 4000 },
   plugins: [
     react(),
     tailwindcss(),

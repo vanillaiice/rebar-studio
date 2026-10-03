@@ -4,6 +4,7 @@
 // What the app asks of its shell. The desktop app's preload (electron/preload.cjs) exposes
 // window.rebarStudio; in a browser the same calls fall back to downloads and file inputs.
 
+import { zipSync } from 'fflate';
 import { getSettings } from '../store/settings';
 
 export interface PdfRequest {
@@ -81,7 +82,6 @@ export async function saveFile(request: SaveRequest & { type?: string }): Promis
 // saveFiles writes several files into a folder the user picks (desktop); a browser gets one zip.
 export async function saveFiles(files: { name: string; bytes: Uint8Array }[], zipName: string): Promise<boolean> {
   if (desktop) return (await desktop.saveFiles(files, await openAfterSave())) !== null;
-  const { zipSync } = await import('fflate');
   const zipped = zipSync(Object.fromEntries(files.map((f) => [f.name, f.bytes])), { level: 0 });
   download(zipName, new Blob([zipped as BlobPart], { type: 'application/zip' }));
   return true;
