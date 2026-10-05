@@ -1,7 +1,7 @@
 {
   "name": "rebar-studio",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "Rebar Studio: author .reb form templates, fill documents and render them to PDF, offline.",
   "author": "hblabs",
   "license": "GPL-3.0-or-later",
