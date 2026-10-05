@@ -5,9 +5,9 @@
 1. Make sure `master` is green (CI: lint, unit tests, end to end, PDF fidelity).
 2. Bump the version with gover (`.gover`): it edits `package.json` and `package-lock.json`, commits,
    and tags `vX.Y.Z`. Push the commit and the tag.
-3. The **Release** workflow builds the installers on Linux (AppImage, deb), Windows (NSIS installer,
-   portable) and macOS (arm64 and x64; dmg, and zip for updates), and uploads them with the update
-   files (`latest*.yml`, `beta*.yml`) to a **draft** GitHub release.
+3. The **Release** workflow builds the installers on Linux (AppImage, deb) and Windows (NSIS
+   installer, portable), and uploads them with the update files (`latest*.yml`, `beta*.yml`) to a
+   **draft** GitHub release. macOS is not built for now (the `build.mac` config is kept for later).
 4. Check the draft, write its notes, publish it. Installed apps see the update on their next check.
 
 A tag with a prerelease suffix (`v1.3.0-beta.1`) publishes to the **beta** channel: only apps whose
