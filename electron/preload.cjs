@@ -22,7 +22,8 @@ contextBridge.exposeInMainWorld('rebarStudio', {
     return stop;
   },
   getVersion: () => ipcRenderer.invoke('get-version'),
-  checkForUpdates: (channel) => ipcRenderer.invoke('check-updates', channel),
+  checkForUpdates: (channel, automatic) => ipcRenderer.invoke('check-updates', channel, automatic),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
   installUpdate: () => ipcRenderer.invoke('install-update'),
   onUpdateStatus: (callback) => listen('update-status', callback),
 });

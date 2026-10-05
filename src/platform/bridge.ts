@@ -40,7 +40,9 @@ interface DesktopBridge {
   saveFiles(files: { name: string; bytes: Uint8Array }[], open?: boolean): Promise<{ folder: string; count: number } | null>;
   onOpenFile(callback: (file: OpenedFile) => void): () => void;
   getVersion(): Promise<string>;
-  checkForUpdates(channel: 'stable' | 'beta'): Promise<UpdateStatus>;
+  // automatic: download the update found and install it on quit (Settings, "Update automatically").
+  checkForUpdates(channel: 'stable' | 'beta', automatic: boolean): Promise<UpdateStatus>;
+  downloadUpdate(): Promise<void>;
   installUpdate(): Promise<void>;
   onUpdateStatus(callback: (status: UpdateStatus) => void): () => void;
 }

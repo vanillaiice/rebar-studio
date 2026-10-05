@@ -11,6 +11,7 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require('electron')
 const fs = require('fs');
 const path = require('path');
 const { createRenderer } = require('./render.cjs');
+const { updateChannel } = require('./updates.cjs');
 
 // A separate profile (tests, or a second workspace): REBAR_STUDIO_USER_DATA=/some/folder.
 if (process.env.REBAR_STUDIO_USER_DATA) app.setPath('userData', process.env.REBAR_STUDIO_USER_DATA);
@@ -126,6 +127,8 @@ ipcMain.on('renderer-ready', (event) => {
 });
 
 // --- Updates (electron-updater, from GitHub Releases) ----------------------------------------------
+// Studio downloads and installs an update by itself only when automatic updates are on in Settings;
+// otherwise a check only reports it, and the person chooses to download and to install it.
 
 let updater = null;
 
@@ -136,8 +139,8 @@ function sendUpdate(status) {
 function getUpdater() {
   if (updater) return updater;
   updater = require('electron-updater').autoUpdater;
-  updater.autoDownload = true;
-  updater.autoInstallOnAppQuit = true;
+  updater.autoDownload = false;
+  updater.autoInstallOnAppQuit = false;
   updater.on('checking-for-update', () => sendUpdate({ state: 'checking' }));
   updater.on('update-available', (info) => sendUpdate({ state: 'available', version: info.version }));
   updater.on('update-not-available', () => sendUpdate({ state: 'none' }));
@@ -147,21 +150,32 @@ function getUpdater() {
   return updater;
 }
 
-ipcMain.handle('check-updates', async (event, channel) => {
+ipcMain.handle('check-updates', async (event, channel, automatic) => {
   if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
   if (!app.isPackaged) return { state: 'unsupported', message: 'Updates work in installed builds only.' };
   if (process.platform === 'linux' && !process.env.APPIMAGE) {
     return { state: 'unsupported', message: 'This build updates through your package manager.' };
   }
   const u = getUpdater();
-  u.channel = channel === 'beta' ? 'beta' : 'latest';
-  u.allowPrerelease = channel === 'beta';
+  u.channel = updateChannel(channel, app.getVersion());
+  u.allowPrerelease = u.channel === 'beta';
+  u.autoDownload = automatic === true;
+  u.autoInstallOnAppQuit = automatic === true;
   try {
     const result = await u.checkForUpdates();
     if (!result || !result.isUpdateAvailable) return { state: 'none' };
     return { state: 'available', version: result.updateInfo.version };
   } catch (e) {
     return { state: 'error', message: e.message };
+  }
+});
+
+ipcMain.handle('download-update', async (event) => {
+  if (!fromMainWindow(event)) throw new Error('refused: unknown sender');
+  try {
+    await getUpdater().downloadUpdate();
+  } catch (e) {
+    sendUpdate({ state: 'error', message: e.message });
   }
 });
 

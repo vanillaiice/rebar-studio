@@ -37,7 +37,7 @@ function DesktopUpdate() {
   useEffect(() => {
     const unsubscribe = desktop!.onUpdateStatus(setStatus);
     void getSettings().then((settings) => {
-      if (settings.updates.autoCheck) void desktop!.checkForUpdates(settings.updates.channel).then(setStatus);
+      if (settings.updates.autoCheck) void desktop!.checkForUpdates(settings.updates.channel, true).then(setStatus);
     });
     return unsubscribe;
   }, []);

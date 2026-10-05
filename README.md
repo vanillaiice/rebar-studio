@@ -26,7 +26,7 @@ WebAssembly, so a template behaves and prints the same in Studio and in Rebar.
 | Files | `.reb`, `.rebpack` (a template with its images, the format Rebar imports), `.rebdoc` (one document, self-contained), `.rebbackup` (the workspace); the desktop app and the installed web app open them |
 | Offline | The web app installs as a PWA and works offline from its first visit; the desktop app is offline by nature |
 | Appearance | Amber, Ocean, Forest and Violet app themes, saved in Settings |
-| Updates | Desktop: electron-updater from GitHub Releases, stable or beta channel, never without asking. Web: a "reload" prompt |
+| Updates | Desktop: electron-updater from GitHub Releases, stable or beta channel (a beta build follows the betas). With automatic updates on (the default), downloaded in the background and installed on quit; off, nothing is downloaded until asked. Web: a "reload" prompt |
 
 ## Development
 

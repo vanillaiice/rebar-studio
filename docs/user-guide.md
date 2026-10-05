@@ -88,7 +88,9 @@ The desktop app opens these files when you double-click them.
 - **Storage and backups**: what your workspace uses, **Back up now** and **Restore a backup**
   (restoring replaces everything). A browser can clear a site's data: keep backups, and install the
   web app. Studio reminds you when a backup is due.
-- **Updates** (desktop): check at startup, stable or beta channel.
+- **Updates** (desktop): with "Update automatically" on, Studio checks at startup, downloads a new
+  version in the background and installs it when you quit; off, "Check now" finds it and you choose
+  to download and install. Stable or beta channel; a beta build always follows the betas.
 
 ## Fonts
 

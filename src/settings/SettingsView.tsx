@@ -237,9 +237,12 @@ export function SettingsView() {
 
         {IS_DESKTOP && (
           <Section title="Updates">
-            <label className="flex items-center gap-3 text-sm text-slate-300">
-              <input type="checkbox" checked={settings.updates.autoCheck} onChange={(e) => { const value = e.target.checked; change((s) => { s.updates.autoCheck = value; }); }} className="h-[18px] w-[18px] accent-brand-amber" />
-              Check for updates when Studio starts
+            <label className="flex items-start gap-3 text-sm text-slate-300">
+              <input type="checkbox" checked={settings.updates.autoCheck} onChange={(e) => { const value = e.target.checked; change((s) => { s.updates.autoCheck = value; }); }} className="mt-0.5 h-[18px] w-[18px] accent-brand-amber" />
+              <span>
+                Update automatically
+                <span className="block text-xs text-slate-500">Studio checks when it starts, downloads a new version in the background and installs it when you quit. Off: nothing is downloaded until you choose to.</span>
+              </span>
             </label>
             <Label label="Channel">
               <select className={`${inputClass} max-w-xs`} value={settings.updates.channel} onChange={(e) => { const value = e.target.value as 'stable' | 'beta'; change((s) => { s.updates.channel = value; }); }}>
@@ -248,18 +251,19 @@ export function SettingsView() {
               </select>
             </Label>
             <div className="flex items-center gap-3">
-              <Button size="sm" icon={<RefreshCw size={16} />} disabled={update.state === 'checking' || update.state === 'downloading'} onClick={async () => setUpdate(await desktop!.checkForUpdates(settings.updates.channel))}>
+              <Button size="sm" icon={<RefreshCw size={16} />} disabled={update.state === 'checking' || update.state === 'downloading'} onClick={async () => setUpdate(await desktop!.checkForUpdates(settings.updates.channel, settings.updates.autoCheck))}>
                 Check now
               </Button>
               <span className="text-xs text-slate-400">
                 {update.state === 'checking' && 'Checking…'}
                 {update.state === 'none' && 'Studio is up to date.'}
-                {update.state === 'available' && `Version ${update.version} is available; downloading.`}
+                {update.state === 'available' && (settings.updates.autoCheck ? `Version ${update.version} is available; downloading.` : `Version ${update.version} is available.`)}
                 {update.state === 'downloading' && `Downloading ${Math.round(update.percent ?? 0)}%`}
                 {update.state === 'ready' && `Version ${update.version} is ready: restart to install.`}
                 {update.state === 'unsupported' && (update.message ?? 'Updates are not available for this build.')}
                 {update.state === 'error' && <span className="text-red-400">{update.message}</span>}
               </span>
+              {update.state === 'available' && !settings.updates.autoCheck && <Button size="sm" variant="primary" onClick={() => void desktop!.downloadUpdate()}>Download</Button>}
               {update.state === 'ready' && <Button size="sm" variant="primary" onClick={() => desktop!.installUpdate()}>Restart and install</Button>}
             </div>
           </Section>
