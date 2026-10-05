@@ -8,7 +8,7 @@ import { DatabaseBackup, HardDriveDownload, ImagePlus, RefreshCw, ShieldCheck, T
 import { useEffect, useState, type ReactNode } from 'react';
 import { useSettings } from '../app/useSettings';
 import { THEMES, type Theme } from '../app/themes';
-import { Badge, Button, Label, TextInput } from '../components/ui';
+import { Badge, Button, Label, PageHeader, TextInput } from '../components/ui';
 import { errorMessage, formatBytes, formatDate, inputClass } from '../components/format';
 import { useConfirm } from '../components/useConfirm';
 import { useToast } from '../components/toast';
@@ -21,10 +21,10 @@ import type { Settings } from '../store/types';
 
 function Section({ title, description, children }: { title: string; description?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-xl border border-white/10 bg-brand-steel p-5">
-      <h2 className="text-sm font-bold text-white">{title}</h2>
-      {description && <p className="mt-1 text-xs text-slate-400">{description}</p>}
-      <div className="mt-4 flex flex-col gap-4">{children}</div>
+    <section className="mb-6 break-inside-avoid rounded-xl border border-white/10 bg-brand-steel p-6">
+      <h2 className="text-lg font-bold text-white">{title}</h2>
+      {description && <p className="mt-1 text-sm text-slate-400">{description}</p>}
+      <div className="mt-5 flex flex-col gap-5">{children}</div>
     </section>
   );
 }
@@ -151,11 +151,9 @@ export function SettingsView() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <header className="border-b border-white/10 bg-brand-steel px-6 py-4">
-        <h1 className="text-lg font-bold text-white">Settings</h1>
-        <p className="text-xs text-slate-400">Everything stays on this device; nothing is sent anywhere.</p>
-      </header>
-      <div className="mx-auto flex max-w-3xl flex-col gap-5 p-6">
+      <PageHeader title="Settings" description="Everything stays on this device; nothing is sent anywhere." />
+      {/* Two columns on a wide window; each section stays whole. */}
+      <div className="max-w-3xl px-8 py-6 xl:max-w-7xl xl:columns-2 xl:gap-6">
         <Section title="Appearance" description="Choose Studio’s colors.">
           <Label label="Theme">
             <select aria-label="Theme" className={`${inputClass} max-w-xs`} value={settings.theme} onChange={(e) => { const value = e.target.value as Theme; change((s) => { s.theme = value; }); }}>
@@ -163,20 +161,20 @@ export function SettingsView() {
             </select>
           </Label>
           <div className="flex gap-3" aria-hidden="true">
-            {THEMES.map((theme) => <span key={theme.id} title={theme.name} className="h-6 w-6 rounded-full" style={{ backgroundColor: theme.color }} />)}
+            {THEMES.map((theme) => <span key={theme.id} title={theme.name} className="h-7 w-7 rounded-full" style={{ backgroundColor: theme.color }} />)}
           </div>
         </Section>
         <Section title="Profile" description="Templates print these as system values, so a template made here prints your details.">
           <SettingInput label="Organization" help={<code>{'{{.OrganizationName}}'}</code>} value={settings.profile.organizationName} onSave={(v) => change((s) => { s.profile.organizationName = v; })} />
           <SettingInput label="Your name" help={<code>{'{{.ReporterName}}'}</code>} value={settings.profile.authorName} onSave={(v) => change((s) => { s.profile.authorName = v; })} />
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold text-slate-300">Logo</span>
+            <span className="text-sm font-semibold text-slate-300">Logo</span>
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-40 items-center justify-center rounded-lg bg-white/90 p-2">
                 {logoUrl ? <img src={logoUrl} alt="Logo" className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-slate-500">No logo</span>}
               </div>
-              <Button size="sm" icon={<ImagePlus size={14} />} onClick={setLogo}>{logoUrl ? 'Replace' : 'Add logo'}</Button>
-              {logoUrl && <Button size="sm" variant="ghost" icon={<Trash2 size={14} />} onClick={removeLogo}>Remove</Button>}
+              <Button size="sm" icon={<ImagePlus size={16} />} onClick={setLogo}>{logoUrl ? 'Replace' : 'Add logo'}</Button>
+              {logoUrl && <Button size="sm" variant="ghost" icon={<Trash2 size={16} />} onClick={removeLogo}>Remove</Button>}
             </div>
             <span className="text-xs text-slate-500"><code>{'<img src="{{.OrganizationLogo}}">'}</code></span>
           </div>
@@ -196,7 +194,7 @@ export function SettingsView() {
           />
           {IS_DESKTOP && (
             <label className="flex items-start gap-3 text-sm text-slate-300">
-              <input type="checkbox" checked={settings.openAfterSave} onChange={(e) => { const value = e.target.checked; change((s) => { s.openAfterSave = value; }); }} className="mt-0.5 h-4 w-4 accent-brand-amber" />
+              <input type="checkbox" checked={settings.openAfterSave} onChange={(e) => { const value = e.target.checked; change((s) => { s.openAfterSave = value; }); }} className="mt-0.5 h-[18px] w-[18px] accent-brand-amber" />
               <span>
                 Open files automatically after saving them
                 <span className="block text-xs text-slate-500">PDFs, registers (CSV, JSON) and HTML open in their usual app; a batch export opens its folder.</span>
@@ -212,7 +210,7 @@ export function SettingsView() {
             </select>
           </Label>
           <label className="flex items-center gap-3 text-sm text-slate-300">
-            <input type="checkbox" checked={settings.photos.keepOriginal} onChange={(e) => { const value = e.target.checked; change((s) => { s.photos.keepOriginal = value; }); }} className="h-4 w-4 accent-brand-amber" />
+            <input type="checkbox" checked={settings.photos.keepOriginal} onChange={(e) => { const value = e.target.checked; change((s) => { s.photos.keepOriginal = value; }); }} className="h-[18px] w-[18px] accent-brand-amber" />
             Keep original photos (larger files, full resolution)
           </label>
         </Section>
@@ -221,14 +219,14 @@ export function SettingsView() {
           {usage && (
             <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">
               <span>{formatBytes(usage.used)} used{usage.quota ? ` of ${formatBytes(usage.quota)} available` : ''} · {usage.files} files</span>
-              {usage.persisted === true && <Badge tone="green"><ShieldCheck size={12} /> Kept by the browser</Badge>}
+              {usage.persisted === true && <Badge tone="green"><ShieldCheck size={14} /> Kept by the browser</Badge>}
               {usage.persisted === false && !IS_DESKTOP && <Button size="sm" onClick={persist}>Ask the browser to keep it</Button>}
             </div>
           )}
           <p className="text-xs text-slate-500">Last backup: {settings.lastBackupAt ? formatDate(settings.lastBackupAt) : 'never'}</p>
           <div className="flex flex-wrap gap-2">
-            <Button variant="primary" icon={<HardDriveDownload size={15} />} onClick={backup}>Back up now</Button>
-            <Button icon={<DatabaseBackup size={15} />} onClick={restore}>Restore a backup</Button>
+            <Button variant="primary" icon={<HardDriveDownload size={17} />} onClick={backup}>Back up now</Button>
+            <Button icon={<DatabaseBackup size={17} />} onClick={restore}>Restore a backup</Button>
           </div>
           <Label label="Remind me to back up after">
             <select className={`${inputClass} max-w-xs`} value={settings.backupReminderDays} onChange={(e) => { const value = Number(e.target.value); change((s) => { s.backupReminderDays = value; }); }}>
@@ -240,7 +238,7 @@ export function SettingsView() {
         {IS_DESKTOP && (
           <Section title="Updates">
             <label className="flex items-center gap-3 text-sm text-slate-300">
-              <input type="checkbox" checked={settings.updates.autoCheck} onChange={(e) => { const value = e.target.checked; change((s) => { s.updates.autoCheck = value; }); }} className="h-4 w-4 accent-brand-amber" />
+              <input type="checkbox" checked={settings.updates.autoCheck} onChange={(e) => { const value = e.target.checked; change((s) => { s.updates.autoCheck = value; }); }} className="h-[18px] w-[18px] accent-brand-amber" />
               Check for updates when Studio starts
             </label>
             <Label label="Channel">
@@ -250,7 +248,7 @@ export function SettingsView() {
               </select>
             </Label>
             <div className="flex items-center gap-3">
-              <Button size="sm" icon={<RefreshCw size={14} />} disabled={update.state === 'checking' || update.state === 'downloading'} onClick={async () => setUpdate(await desktop!.checkForUpdates(settings.updates.channel))}>
+              <Button size="sm" icon={<RefreshCw size={16} />} disabled={update.state === 'checking' || update.state === 'downloading'} onClick={async () => setUpdate(await desktop!.checkForUpdates(settings.updates.channel))}>
                 Check now
               </Button>
               <span className="text-xs text-slate-400">

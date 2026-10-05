@@ -50,13 +50,13 @@ export function VersionsDialog({ templateId, currentId, onRestored, onClose }: {
             {version.id === currentId && <Badge tone="amber">Current</Badge>}
             {!version.compiled && <Badge tone="red">Does not compile</Badge>}
             <Badge>{version.documents} document{version.documents === 1 ? '' : 's'}</Badge>
-            <Button size="sm" variant="ghost" icon={<History size={14} />} onClick={() => setViewing(version)}>
+            <Button size="sm" variant="ghost" icon={<History size={16} />} onClick={() => setViewing(version)}>
               Source
             </Button>
             {version.id !== currentId && (
               <Button
                 size="sm"
-                icon={<RotateCcw size={14} />}
+                icon={<RotateCcw size={16} />}
                 onClick={async () => {
                   const restored = await restoreVersion(templateId, version.id);
                   toast(`Restored v${version.number} as v${restored.number}`, 'success');

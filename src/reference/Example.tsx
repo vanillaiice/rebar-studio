@@ -240,7 +240,7 @@ export function Example({ source: shown, name, answers }: { source: string; name
       {error && <p className="text-sm text-red-300">{error}</p>}
       {compiled && <Live compiled={compiled} source={shown} answers={answers} />}
       <button type="button" onClick={start} className="mt-3 inline-flex items-center gap-2 rounded-md px-2 py-1 font-sans text-sm font-semibold text-brand-amber hover:bg-brand-amber/10">
-        <FilePlus2 size={15} /> Start a template from this
+        <FilePlus2 size={17} /> Start a template from this
       </button>
     </div>
   );

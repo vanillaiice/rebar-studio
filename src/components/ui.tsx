@@ -33,8 +33,8 @@ export function Button({
       type="button"
       {...props}
       className={clsx(
-        'inline-flex items-center justify-center gap-2 rounded-md font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-amber disabled:cursor-not-allowed disabled:opacity-50',
-        size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-2 text-sm',
+        'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-amber disabled:cursor-not-allowed disabled:opacity-50',
+        size === 'sm' ? 'h-8 px-3 text-sm' : 'h-10 px-4 text-sm',
         variant === 'primary' && 'bg-brand-amber text-brand-steel hover:bg-brand-amber-dark',
         variant === 'secondary' && 'bg-brand-steel-light text-slate-100 hover:bg-slate-700',
         variant === 'ghost' && 'text-slate-300 hover:bg-white/5 hover:text-white',
@@ -45,6 +45,19 @@ export function Button({
       {icon}
       {children}
     </button>
+  );
+}
+
+// PageHeader: a page's title, what it is for, and its main actions.
+export function PageHeader({ title, description, children }: { title: string; description?: ReactNode; children?: ReactNode }) {
+  return (
+    <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-brand-steel px-8 py-5">
+      <div className="mr-auto min-w-0">
+        <h1 className="truncate text-2xl font-bold tracking-tight text-white">{title}</h1>
+        {description && <p className="mt-0.5 text-sm text-slate-400">{description}</p>}
+      </div>
+      {children}
+    </header>
   );
 }
 
@@ -82,17 +95,17 @@ export function Dialog({
         aria-label={title}
         className={clsx(
           'flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-white/10 bg-brand-steel shadow-2xl',
-          wide ? 'max-w-4xl' : 'max-w-lg',
+          wide ? 'max-w-5xl' : 'max-w-xl',
         )}
       >
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
-          <h2 className="text-sm font-bold text-white">{title}</h2>
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+          <h2 className="text-base font-bold text-white">{title}</h2>
           <button data-close type="button" onClick={onClose} className="text-slate-400 hover:text-white" aria-label="Close">
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
-        <div className="overflow-y-auto px-5 py-4 text-sm text-slate-300">{children}</div>
-        {footer && <div className="flex justify-end gap-2 border-t border-white/10 px-5 py-3">{footer}</div>}
+        <div className="overflow-y-auto px-6 py-5 text-sm text-slate-300">{children}</div>
+        {footer && <div className="flex justify-end gap-2 border-t border-white/10 px-6 py-4">{footer}</div>}
       </div>
     </div>
   );
@@ -140,7 +153,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               className="text-current opacity-60 hover:opacity-100"
               onClick={() => setToasts((all) => all.filter((t) => t.id !== toast.id))}
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           </div>
         ))}
@@ -153,7 +166,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 export function Label({ label, help, children, error }: { label: string; help?: ReactNode; error?: string; children: ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-semibold text-slate-300">{label}</span>
+      <span className="text-sm font-semibold text-slate-300">{label}</span>
       {children}
       {help && <span className="text-xs text-slate-500">{help}</span>}
       {error && <span className="text-xs font-medium text-red-400">{error}</span>}
@@ -174,7 +187,7 @@ export function Badge({ children, tone = 'neutral' }: { children: ReactNode; ton
   return (
     <span
       className={clsx(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+        'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold',
         tone === 'neutral' && 'bg-white/5 text-slate-300',
         tone === 'amber' && 'bg-brand-amber/15 text-brand-amber',
         tone === 'red' && 'bg-red-500/15 text-red-300',
@@ -188,9 +201,9 @@ export function Badge({ children, tone = 'neutral' }: { children: ReactNode; ton
 
 export function EmptyState({ icon, title, children }: { icon: ReactNode; title: string; children?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/10 px-6 py-16 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/10 px-6 py-20 text-center">
       <div className="text-slate-500">{icon}</div>
-      <h3 className="text-base font-bold text-white">{title}</h3>
+      <h3 className="text-lg font-bold text-white">{title}</h3>
       {children && <div className="max-w-md text-sm text-slate-400">{children}</div>}
     </div>
   );
@@ -221,12 +234,12 @@ export function Menu({ label, icon, items }: { label: string; icon: ReactNode; i
         title={label}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="rounded-md p-1.5 text-slate-400 hover:bg-white/5 hover:text-white"
+        className="rounded-md p-2 text-slate-400 hover:bg-white/5 hover:text-white"
       >
         {icon}
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 z-40 mt-1 min-w-52 overflow-hidden rounded-lg border border-white/10 bg-brand-steel py-1 shadow-2xl">
+        <div role="menu" className="absolute right-0 z-40 mt-1 min-w-60 overflow-hidden rounded-lg border border-white/10 bg-brand-steel py-1 shadow-2xl">
           {items.map((item) => (
             <button
               key={item.label}
@@ -238,7 +251,7 @@ export function Menu({ label, icon, items }: { label: string; icon: ReactNode; i
                 item.run();
               }}
               className={clsx(
-                'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm disabled:opacity-40',
+                'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm disabled:opacity-40',
                 item.danger ? 'text-red-300 hover:bg-red-500/10' : 'text-slate-200 hover:bg-white/5',
               )}
             >

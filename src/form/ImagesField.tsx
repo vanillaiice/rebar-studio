@@ -118,9 +118,9 @@ export function ImagesField({
               {files.url(ref) ? <img src={files.url(ref)} alt={`Photo ${index + 1}`} className="h-full w-full object-cover" /> : null}
               {!readOnly && (
                 <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
-                  <button type="button" aria-label="Move left" disabled={index === 0} onClick={() => move(index, -1)} className="rounded p-1 text-white disabled:opacity-30"><ArrowLeft size={14} /></button>
-                  <button type="button" aria-label="Remove photo" onClick={() => onChange(refs.filter((r) => r !== ref))} className="rounded p-1 text-red-300"><X size={14} /></button>
-                  <button type="button" aria-label="Move right" disabled={index === refs.length - 1} onClick={() => move(index, 1)} className="rounded p-1 text-white disabled:opacity-30"><ArrowRight size={14} /></button>
+                  <button type="button" aria-label="Move left" disabled={index === 0} onClick={() => move(index, -1)} className="rounded p-1 text-white disabled:opacity-30"><ArrowLeft size={16} /></button>
+                  <button type="button" aria-label="Remove photo" onClick={() => onChange(refs.filter((r) => r !== ref))} className="rounded p-1 text-red-300"><X size={16} /></button>
+                  <button type="button" aria-label="Move right" disabled={index === refs.length - 1} onClick={() => move(index, 1)} className="rounded p-1 text-white disabled:opacity-30"><ArrowRight size={16} /></button>
                 </div>
               )}
             </li>
@@ -132,13 +132,13 @@ export function ImagesField({
       ) : (
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={() => pick(true)} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-steel-light px-3 text-sm font-semibold text-white hover:bg-slate-700">
-            <Camera size={16} /> Take photo
+            <Camera size={18} /> Take photo
           </button>
           <button type="button" onClick={() => pick(false)} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-steel-light px-3 text-sm font-semibold text-white hover:bg-slate-700">
-            <ImagePlus size={16} /> Choose files
+            <ImagePlus size={18} /> Choose files
           </button>
           <span className="text-xs text-slate-500">or drop or paste images here</span>
-          {busy && <Loader2 size={16} className="animate-spin text-brand-amber" />}
+          {busy && <Loader2 size={18} className="animate-spin text-brand-amber" />}
         </div>
       )}
     </div>

@@ -196,9 +196,7 @@ export function pagedDocument(rendered: string, options: PagedOptions): string {
 
   const hasOwnSize = /@page[^{]*\{[^}]*\bsize\s*:/i.test(css);
   const base = `@page { ${hasOwnSize ? '' : 'size: A4; '}margin: 0.5in; }
-body { margin: 0; padding: 16px 0; }
-.pagedjs_page { background: #ffffff; margin: 0 auto 16px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); }
-@media print { body { padding: 0; } .pagedjs_page { margin: 0; box-shadow: none; } }
+body { margin: 0; }
 ${breaks ? '.reb-break-before { break-before: page; } .reb-break-after { break-after: page; }' : ''}`;
   const marginCss =
     (hasFooter ? '@page { margin-bottom: 1in; @bottom-center { content: element(rebFooter); } }\n.reb-print-footer { position: running(rebFooter); }\n' : '') +
@@ -245,9 +243,14 @@ ${pagedScript}
         page.querySelectorAll('.pageNumber').forEach(function (s) { s.textContent = String(i + 1); });
         page.querySelectorAll('.totalPages').forEach(function (s) { s.textContent = String(total); });
       });
+      // On screen, pages on a grey desk. Added once paginated: paged.js reads the stylesheets
+      // before, applying print rules on screen and dropping screen ones.
+      var screen = document.createElement('style');
+      screen.textContent = '@media screen { html { background: #52525b; } body { padding: 16px; } .pagedjs_page { background: #ffffff; margin: 0 auto 16px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); } }';
+      document.head.appendChild(screen);
       window.scrollTo(0, ${scrollY});
       window.addEventListener('scroll', function () { parent.postMessage({ type: 'reb-scroll', y: window.scrollY }, '*'); });
-      parent.postMessage({ type: 'reb-paged-done', pages: total }, '*');
+      parent.postMessage({ type: 'reb-paged-done', pages: total, width: pages[0] ? pages[0].offsetWidth : 0 }, '*');
     });
   }
   window.addEventListener('message', function (event) {

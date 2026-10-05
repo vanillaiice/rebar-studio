@@ -9,10 +9,13 @@
 // Updates never blank the preview: a new version is prepared out of sight (the next PDF drawn
 // off-screen, the next page paginated in a hidden frame) and replaces the shown one only when ready,
 // where the reader was.
+//
+// Zoom 'fit' sizes the pages to the pane's width, and follows the pane as it is resized.
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 import { desktop } from '../platform/bridge';
 import { engineAssetUrl, pagedDocument } from './document';
+import { A4_WIDTH, fitZoom } from './fit';
 import { dataUrls, inlineFiles } from './files';
 import { renderPdf } from './pdf';
 import { PdfPages } from './PdfPages';
@@ -32,14 +35,15 @@ interface Props {
   html: string;
   files: Map<string, Blob>;
   fontCss: string;
-  zoom: number;
+  zoom: number | 'fit';
   onState?(state: PreviewState): void;
+  onZoom?(zoom: number): void; // the zoom in effect, also when fitting
 }
 
 // Two frames take turns: the shown one, and the next version paginating behind it.
 type Slot = { id: number; doc: string } | null;
 
-export const Preview = forwardRef<PreviewHandle, Props>(function Preview({ html, files, fontCss, zoom, onState }, ref) {
+export const Preview = forwardRef<PreviewHandle, Props>(function Preview({ html, files, fontCss, zoom, onState, onZoom }, ref) {
   const [pdf, setPdf] = useState<Uint8Array | null>(null);
   const [slots, setSlots] = useState<[Slot, Slot]>([null, null]);
   const [front, setFront] = useState<0 | 1>(0);
@@ -52,6 +56,23 @@ export const Preview = forwardRef<PreviewHandle, Props>(function Preview({ html,
     report.current = onState;
     frontNow.current = front;
   });
+
+  const box = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
+  const [pageWidth, setPageWidth] = useState(A4_WIDTH);
+  useLayoutEffect(() => {
+    const element = box.current;
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const effective = zoom === 'fit' ? fitZoom(width, pageWidth) : zoom;
+  const reportZoom = useRef(onZoom);
+  useEffect(() => {
+    reportZoom.current = onZoom;
+  });
+  useEffect(() => reportZoom.current?.(effective), [effective]);
 
   useImperativeHandle(ref, () => ({
     pdf: () => pdf,
@@ -101,6 +122,7 @@ export const Preview = forwardRef<PreviewHandle, Props>(function Preview({ html,
       if (event.data?.type === 'reb-scroll' && index === frontNow.current) scroll.current = Number(event.data.y) || 0;
       if (event.data?.type === 'reb-paged-done') {
         if (index !== frontNow.current) setFront(index as 0 | 1);
+        if (Number(event.data.width) > 0) setPageWidth(Number(event.data.width));
         report.current?.({ rendering: false, pages: Number(event.data.pages) || 0, error: null });
       }
     };
@@ -111,17 +133,24 @@ export const Preview = forwardRef<PreviewHandle, Props>(function Preview({ html,
   }, []);
 
   if (desktop) {
-    return pdf ? (
-      <PdfPages
-        bytes={pdf}
-        zoom={zoom}
-        onPages={(pages) => report.current?.({ rendering: false, pages, error: null })}
-        onError={(error) => report.current?.({ rendering: false, pages: 0, error })}
-      />
-    ) : null;
+    return (
+      <div ref={box} className="h-full w-full">
+        {pdf && width > 0 && (
+          <PdfPages
+            bytes={pdf}
+            zoom={effective}
+            onPages={(pages, first) => {
+              setPageWidth(first);
+              report.current?.({ rendering: false, pages, error: null });
+            }}
+            onError={(error) => report.current?.({ rendering: false, pages: 0, error })}
+          />
+        )}
+      </div>
+    );
   }
   return (
-    <div className="relative h-full w-full">
+    <div ref={box} className="relative h-full w-full">
       {slots.map((slot, index) =>
         slot ? (
           <iframe
@@ -132,7 +161,7 @@ export const Preview = forwardRef<PreviewHandle, Props>(function Preview({ html,
             tabIndex={index === front ? undefined : -1}
             srcDoc={slot.doc}
             className={`absolute inset-0 h-full w-full border-0 transition-opacity duration-200 motion-reduce:transition-none ${index === front ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0'}`}
-            style={{ zoom }}
+            style={{ zoom: effective }}
             // allow-modals lets the page open the print dialog; still no same-origin access.
             sandbox="allow-scripts allow-modals"
           />

@@ -78,7 +78,7 @@ export function AssetsDialog({ version, onChanged, onClose }: { version: Templat
       onClose={onClose}
       wide
       footer={
-        <Button variant="primary" icon={<ImagePlus size={15} />} onClick={add} disabled={items.length >= MAX_TEMPLATE_ASSETS}>
+        <Button variant="primary" icon={<ImagePlus size={17} />} onClick={add} disabled={items.length >= MAX_TEMPLATE_ASSETS}>
           Add images
         </Button>
       }
@@ -107,14 +107,14 @@ export function AssetsDialog({ version, onChanged, onClose }: { version: Templat
                     {item.name}
                   </button>
                 )}
-                <div className="flex items-center justify-between text-[11px] text-slate-500">
+                <div className="flex items-center justify-between text-xs text-slate-500">
                   {formatBytes(item.size)}
                   <span className="flex gap-1">
                     <button type="button" aria-label={`Copy an img tag for ${item.name}`} title="Copy <img> tag" onClick={() => { void navigator.clipboard.writeText(`<img src="${item.name}" alt="">`); toast('Copied', 'success'); }} className="rounded p-1 hover:text-white">
-                      <Copy size={14} />
+                      <Copy size={16} />
                     </button>
                     <button type="button" aria-label={`Remove ${item.name}`} onClick={async () => onChanged(await removeTemplateAsset(version.templateId, item.name))} className="rounded p-1 text-red-300 hover:text-red-200">
-                      <Trash2 size={14} />
+                      <Trash2 size={16} />
                     </button>
                   </span>
                 </div>

@@ -151,7 +151,7 @@ export function TableField({
               title={url ? `Replace ${column.label}` : `Add ${column.label}`}
               className={`rounded-md text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-brand-amber ${url ? 'overflow-hidden hover:opacity-80' : 'bg-brand-steel-light p-2 hover:bg-slate-700'}`}
             >
-              {url ? <img src={url} alt={column.label} className={`h-12 rounded ${column.kind === 'signature' ? 'bg-white px-1' : 'w-16 object-cover'}`} /> : column.kind === 'image' ? <ImagePlus size={16} /> : <PenLine size={16} />}
+              {url ? <img src={url} alt={column.label} className={`h-12 rounded ${column.kind === 'signature' ? 'bg-white px-1' : 'w-16 object-cover'}`} /> : column.kind === 'image' ? <ImagePlus size={18} /> : <PenLine size={18} />}
             </button>
           )}
         </div>
@@ -197,10 +197,10 @@ export function TableField({
               {!readOnly && (
                 <td className="whitespace-nowrap px-1.5">
                   <div className="flex gap-0.5">
-                    <button type="button" aria-label={`Move row ${index + 1} up`} disabled={index === 0} onClick={() => moveRow(index, -1)} className="rounded p-1.5 text-slate-400 hover:text-white disabled:opacity-30"><ArrowUp size={15} /></button>
-                    <button type="button" aria-label={`Move row ${index + 1} down`} disabled={index === rows.length - 1} onClick={() => moveRow(index, 1)} className="rounded p-1.5 text-slate-400 hover:text-white disabled:opacity-30"><ArrowDown size={15} /></button>
-                    <button type="button" aria-label={`Duplicate row ${index + 1}`} onClick={() => duplicateRow(index)} className="rounded p-1.5 text-slate-400 hover:text-white"><Copy size={15} /></button>
-                    <button type="button" aria-label={`Remove row ${index + 1}`} onClick={() => removeRow(index)} className="rounded p-1.5 text-red-300 hover:text-red-200"><Trash2 size={15} /></button>
+                    <button type="button" aria-label={`Move row ${index + 1} up`} disabled={index === 0} onClick={() => moveRow(index, -1)} className="rounded p-1.5 text-slate-400 hover:text-white disabled:opacity-30"><ArrowUp size={17} /></button>
+                    <button type="button" aria-label={`Move row ${index + 1} down`} disabled={index === rows.length - 1} onClick={() => moveRow(index, 1)} className="rounded p-1.5 text-slate-400 hover:text-white disabled:opacity-30"><ArrowDown size={17} /></button>
+                    <button type="button" aria-label={`Duplicate row ${index + 1}`} onClick={() => duplicateRow(index)} className="rounded p-1.5 text-slate-400 hover:text-white"><Copy size={17} /></button>
+                    <button type="button" aria-label={`Remove row ${index + 1}`} onClick={() => removeRow(index)} className="rounded p-1.5 text-red-300 hover:text-red-200"><Trash2 size={17} /></button>
                   </div>
                 </td>
               )}
@@ -229,7 +229,7 @@ export function TableField({
       </table>
       {!readOnly && (
         <button type="button" onClick={addRow} className="flex w-full items-center justify-center gap-2 border-t border-white/10 py-2.5 text-sm font-semibold text-brand-amber hover:bg-white/5">
-          <Plus size={16} /> Add row
+          <Plus size={18} /> Add row
         </button>
       )}
       {signing && (

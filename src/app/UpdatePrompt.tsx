@@ -14,10 +14,10 @@ import { getSettings } from '../store/settings';
 function Bar({ message, action, onAction, onClose }: { message: string; action: string; onAction(): void; onClose(): void }) {
   return (
     <div role="status" className="fixed bottom-4 left-1/2 z-[55] flex -translate-x-1/2 items-center gap-3 rounded-lg border border-brand-amber/40 bg-brand-steel px-4 py-3 text-sm text-slate-100 shadow-2xl">
-      <RefreshCw size={16} className="text-brand-amber" />
+      <RefreshCw size={18} className="text-brand-amber" />
       {message}
       <Button size="sm" variant="primary" onClick={onAction}>{action}</Button>
-      <button type="button" aria-label="Later" onClick={onClose} className="text-slate-400 hover:text-white"><X size={16} /></button>
+      <button type="button" aria-label="Later" onClick={onClose} className="text-slate-400 hover:text-white"><X size={18} /></button>
     </div>
   );
 }

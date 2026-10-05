@@ -94,7 +94,7 @@ export function Onboarding() {
             <span key={i} className={`h-1.5 w-6 rounded-full ${i === step ? 'bg-brand-amber' : 'bg-white/15'}`} />
           ))}
         </div>
-        {last && <p className="flex items-center gap-1.5 text-xs text-slate-500"><HardDriveDownload size={13} /> Settings has backup and restore.</p>}
+        {last && <p className="flex items-center gap-1.5 text-xs text-slate-500"><HardDriveDownload size={15} /> Settings has backup and restore.</p>}
       </div>
     </Dialog>
   );

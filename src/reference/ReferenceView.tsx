@@ -107,7 +107,7 @@ function FullSpecification() {
           <span className="block font-semibold text-white">The full specification</span>
           <span className="block text-sm text-slate-400">Every tag, attribute and rule of the engine in this version of Studio.</span>
         </span>
-        <ChevronDown size={18} className={`shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={20} className={`shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <div className="border-t border-white/10 px-5 pb-6">
@@ -301,7 +301,7 @@ export default function ReferenceView() {
           <Step id="next" number={9} title="Where to go next">
             <div className="measure flex flex-col gap-8 font-sans">
               <div className="flex gap-4">
-                <LayoutTemplate className="mt-1 shrink-0 text-brand-amber" size={22} />
+                <LayoutTemplate className="mt-1 shrink-0 text-brand-amber" size={24} />
                 <div>
                   <h3>Start from a starter</h3>
                   <p className="mt-1 font-serif">
@@ -314,7 +314,7 @@ export default function ReferenceView() {
                 </div>
               </div>
               <div className="flex gap-4">
-                <Bot className="mt-1 shrink-0 text-brand-amber" size={22} />
+                <Bot className="mt-1 shrink-0 text-brand-amber" size={24} />
                 <div>
                   <h3>Let an AI assistant write it</h3>
                   <p className="mt-1 font-serif">
@@ -322,12 +322,12 @@ export default function ReferenceView() {
                     paste the template it writes into a new template.
                   </p>
                   <button type="button" onClick={downloadGuide} className="inline-flex items-center gap-2 text-sm font-semibold text-brand-amber hover:underline">
-                    <Download size={15} /> Download the AI guide
+                    <Download size={17} /> Download the AI guide
                   </button>
                 </div>
               </div>
               <div className="flex gap-4">
-                <Mail className="mt-1 shrink-0 text-brand-amber" size={22} />
+                <Mail className="mt-1 shrink-0 text-brand-amber" size={24} />
                 <div>
                   <h3>Have it made for you</h3>
                   <p className="mt-1 font-serif">

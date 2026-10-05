@@ -21,7 +21,8 @@ function pdfjs(): Promise<PdfJs> {
 // CSS pixels per PDF point at 100%: a PDF point is 1/72 inch, a CSS pixel 1/96 inch.
 const CSS_PER_POINT = 96 / 72;
 
-export function PdfPages({ bytes, zoom, onPages, onError }: { bytes: Uint8Array; zoom: number; onPages?(count: number): void; onError?(message: string): void }) {
+// onPages reports the page count and the first page's width at 100%, in CSS pixels.
+export function PdfPages({ bytes, zoom, onPages, onError }: { bytes: Uint8Array; zoom: number; onPages?(count: number, firstWidth: number): void; onError?(message: string): void }) {
   const host = useRef<HTMLDivElement>(null);
   const report = useRef(onPages);
   const reportError = useRef(onError);
@@ -40,9 +41,11 @@ export function PdfPages({ bytes, zoom, onPages, onError }: { bytes: Uint8Array;
         const document = await task.promise;
         const pixels = window.devicePixelRatio || 1;
         const pages: HTMLElement[] = [];
+        let firstWidth = 0;
         for (let number = 1; number <= document.numPages; number++) {
           const page = await document.getPage(number);
           const viewport = page.getViewport({ scale: zoom * CSS_PER_POINT });
+          if (number === 1) firstWidth = page.getViewport({ scale: CSS_PER_POINT }).width;
           const canvas = window.document.createElement('canvas');
           canvas.width = Math.floor(viewport.width * pixels);
           canvas.height = Math.floor(viewport.height * pixels);
@@ -52,7 +55,8 @@ export function PdfPages({ bytes, zoom, onPages, onError }: { bytes: Uint8Array;
           canvas.setAttribute('aria-label', `Page ${number} of ${document.numPages}`);
           await page.render({ canvas, viewport, transform: pixels === 1 ? undefined : [pixels, 0, 0, pixels, 0, 0] }).promise;
           if (cancelled) return;
-          canvas.className = 'block bg-white shadow-[0_6px_20px_rgba(0,0,0,0.35)]';
+          // Auto margins centre a page, and let one wider than the column scroll from its left edge.
+          canvas.className = 'mx-auto block shrink-0 bg-white shadow-[0_6px_20px_rgba(0,0,0,0.35)]';
           pages.push(canvas);
         }
         const target = host.current;
@@ -61,7 +65,7 @@ export function PdfPages({ bytes, zoom, onPages, onError }: { bytes: Uint8Array;
         const top = target.scrollTop;
         target.replaceChildren(...pages);
         target.scrollTop = top;
-        report.current?.(pages.length);
+        report.current?.(pages.length, firstWidth);
       } finally {
         void task.destroy();
       }
@@ -73,5 +77,5 @@ export function PdfPages({ bytes, zoom, onPages, onError }: { bytes: Uint8Array;
     };
   }, [bytes, zoom]);
 
-  return <div ref={host} aria-label="PDF preview" className="flex h-full flex-col items-center gap-4 overflow-auto py-4" />;
+  return <div ref={host} aria-label="PDF preview" className="flex h-full flex-col gap-4 overflow-auto p-4" />;
 }

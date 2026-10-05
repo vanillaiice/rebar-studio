@@ -65,10 +65,10 @@ export function SignaturePad({ title, onDone, onClose }: { title: string; onDone
       onClose={onClose}
       footer={
         <>
-          <Button icon={<Eraser size={15} />} onClick={clear} disabled={empty}>
+          <Button icon={<Eraser size={17} />} onClick={clear} disabled={empty}>
             Clear
           </Button>
-          <Button variant="primary" icon={<PenLine size={15} />} onClick={done} disabled={empty}>
+          <Button variant="primary" icon={<PenLine size={17} />} onClick={done} disabled={empty}>
             Use signature
           </Button>
         </>

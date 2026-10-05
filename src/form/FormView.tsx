@@ -41,18 +41,18 @@ function SignatureField({ field, value, onChange, files, readOnly }: { field: Fi
       {url ? (
         <figure>
           <img src={url} alt={`${field.label} (signed)`} className="h-20 rounded-md bg-white px-2" />
-          {signedAt && <figcaption className="mt-1 text-[11px] text-slate-500">Signed {new Date(signedAt).toLocaleString()}</figcaption>}
+          {signedAt && <figcaption className="mt-1 text-xs text-slate-500">Signed {new Date(signedAt).toLocaleString()}</figcaption>}
         </figure>
       ) : (
         readOnly && <span className="text-sm text-slate-500">Not signed</span>
       )}
       {!readOnly && (
         <div className="flex gap-2">
-          <Button icon={<PenLine size={15} />} onClick={() => setOpen(true)}>
+          <Button icon={<PenLine size={17} />} onClick={() => setOpen(true)}>
             {url ? 'Sign again' : 'Sign'}
           </Button>
           {url && (
-            <Button variant="ghost" icon={<Trash2 size={15} />} onClick={() => onChange('')}>
+            <Button variant="ghost" icon={<Trash2 size={17} />} onClick={() => onChange('')}>
               Clear
             </Button>
           )}
@@ -262,8 +262,8 @@ export function FormView({
 
   const render = (group: Group, index: number) => (
     <section key={group.section?.key ?? `group-${index}`} id={group.section ? fieldDomId(group.section.key) : undefined} className="scroll-mt-4">
-      {group.section && <h2 className="mb-4 border-b border-white/10 pb-2 text-base font-bold text-white">{group.section.label}</h2>}
-      <div className="flex flex-col gap-5">
+      {group.section && <h2 className="mb-5 border-b border-white/10 pb-2.5 text-lg font-bold text-white">{group.section.label}</h2>}
+      <div className="flex flex-col gap-6">
         {group.fields.map((field) => {
           const error = state.errors.get(field.key);
           const show = !readOnly && error && (showAllErrors || touched.has(field.key));
@@ -287,13 +287,13 @@ export function FormView({
   return (
     <div ref={container} className="flex gap-8">
       {!useSteps && visibleGroups.filter((g) => g.section).length > 1 && (
-        <nav aria-label="Sections" className="sticky top-0 hidden w-44 shrink-0 self-start lg:block">
+        <nav aria-label="Sections" className="sticky top-0 hidden w-48 shrink-0 self-start lg:block">
           <ul className="flex flex-col gap-1 text-sm">
             {visibleGroups.map(
               (g) =>
                 g.section && (
                   <li key={g.section.key}>
-                    <a href={`#${fieldDomId(g.section.key)}`} onClick={(e) => { e.preventDefault(); document.getElementById(fieldDomId(g.section!.key))?.scrollIntoView({ behavior: 'smooth' }); }} className="block rounded px-2 py-1 text-slate-400 hover:bg-white/5 hover:text-white">
+                    <a href={`#${fieldDomId(g.section.key)}`} onClick={(e) => { e.preventDefault(); document.getElementById(fieldDomId(g.section!.key))?.scrollIntoView({ behavior: 'smooth' }); }} className="block rounded-md px-3 py-1.5 text-slate-400 hover:bg-white/5 hover:text-white">
                       {g.section.label}
                     </a>
                   </li>
@@ -307,8 +307,8 @@ export function FormView({
           <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-2 bg-brand-steel-dark py-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Step {current + 1} of {stepCount}</p>
             <div className="flex gap-2">
-              <Button icon={<ChevronLeft size={16} />} disabled={current === 0} onClick={() => setStep(current - 1)}>Back</Button>
-              <Button variant="primary" disabled={current >= stepCount - 1} onClick={() => setStep(current + 1)}>Next <ChevronRight size={16} /></Button>
+              <Button icon={<ChevronLeft size={18} />} disabled={current === 0} onClick={() => setStep(current - 1)}>Back</Button>
+              <Button variant="primary" disabled={current >= stepCount - 1} onClick={() => setStep(current + 1)}>Next <ChevronRight size={18} /></Button>
             </div>
           </div>
         )}

@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { navigate } from '../app/router';
 import { useSettings } from '../app/useSettings';
 import { Badge, Button, Dialog, Label, Menu, TextArea, TextInput } from '../components/ui';
+import { remember, stored } from '../components/preferences';
 import { errorMessage } from '../components/format';
 import { useToast } from '../components/toast';
 import { engine } from '../engine/client';
@@ -47,22 +48,6 @@ function keepPreview(next: CompiledTemplate, previous: CompiledTemplate | null):
 }
 type Layout = 'split' | 'stacked' | 'tabs';
 
-function stored<T extends string>(key: string, fallback: T): T {
-  try {
-    return (localStorage.getItem(key) as T | null) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function remember(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // preferences are a convenience
-  }
-}
-
 function TabButton({ active, onClick, icon, children }: { active: boolean; onClick(): void; icon: ReactNode; children: ReactNode }) {
   return (
     <button
@@ -71,7 +56,7 @@ function TabButton({ active, onClick, icon, children }: { active: boolean; onCli
       aria-selected={active}
       onClick={onClick}
       className={clsx(
-        'flex shrink-0 items-center gap-2 border-t-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider transition',
+        'flex shrink-0 items-center gap-2 border-t-2 px-4 py-3 text-xs font-semibold uppercase tracking-wider transition',
         active ? 'border-t-brand-amber bg-[#1e1e1e] text-brand-amber' : 'border-t-transparent text-zinc-500 hover:text-zinc-300',
       )}
     >
@@ -94,7 +79,7 @@ function FormPreview({ schema, files: previewFiles }: { schema: Schema; files: R
   return (
     <div className="h-full overflow-y-auto bg-brand-steel-dark p-6">
       <p className="mb-6 flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs text-slate-400">
-        <Info size={14} /> The form this template produces. Answers here are a try-out and are not saved.
+        <Info size={16} /> The form this template produces. Answers here are a try-out and are not saved.
       </p>
       <FormView fields={schema.fields} state={state} files={previewFiles} photo={settings.photos} />
     </div>
@@ -116,7 +101,8 @@ export default function EditorView({ templateId }: { templateId: string }) {
   const [mainView, setMainView] = useState<'editor' | 'preview'>('editor');
   const [sidebar, setSidebar] = useState(() => stored<string>('rebar_sidebar_collapsed', '0') !== '1');
   const [split, setSplit] = useState(50);
-  const [zoom, setZoom] = useState(0.75);
+  const [zoom, setZoom] = useState<number | 'fit'>('fit');
+  const [shownZoom, setShownZoom] = useState(1);
   const [dialog, setDialog] = useState<'assets' | 'versions' | 'details' | null>(null);
   const [preview, setPreview] = useState<PreviewState>({ rendering: false, pages: 0, error: null });
   const [assetFiles, setAssetFiles] = useState<Map<string, Blob>>(new Map());
@@ -308,7 +294,7 @@ export default function EditorView({ templateId }: { templateId: string }) {
   if (!template || !version || source === null) {
     return (
       <div className="flex h-full items-center justify-center gap-3 text-sm text-slate-400">
-        <Loader2 className="animate-spin" size={18} /> Opening the template…
+        <Loader2 className="animate-spin" size={20} /> Opening the template…
       </div>
     );
   }
@@ -316,15 +302,15 @@ export default function EditorView({ templateId }: { templateId: string }) {
   const errorCount = markers.filter((m) => m.severity === 'error').length;
   const warningCount = markers.length - errorCount;
   const compileError = result && !result.ok ? result.error : null;
-  const editorOptions: MonacoApi.editor.IStandaloneEditorConstructionOptions = { minimap: { enabled: false }, fontSize: 13, wordWrap: 'on', padding: { top: 16 }, automaticLayout: true };
+  const editorOptions: MonacoApi.editor.IStandaloneEditorConstructionOptions = { minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 }, automaticLayout: true };
 
   const editorPane = (
     <div className="flex h-full w-full flex-col overflow-hidden bg-[#1e1e1e]">
       <div role="tablist" className="flex shrink-0 items-center overflow-x-auto border-b border-brand-steel-light bg-brand-steel">
-        <TabButton active={tab === 'reb'} onClick={() => setTab('reb')} icon={<FileCode2 size={14} />}>Source</TabButton>
-        <TabButton active={tab === 'form'} onClick={() => setTab('form')} icon={<ListChecks size={14} />}>Form</TabButton>
-        <TabButton active={tab === 'html'} onClick={() => setTab('html')} icon={<Code2 size={14} />}>Compiled</TabButton>
-        <TabButton active={tab === 'fields'} onClick={() => setTab('fields')} icon={<Database size={14} />}>Schema</TabButton>
+        <TabButton active={tab === 'reb'} onClick={() => setTab('reb')} icon={<FileCode2 size={16} />}>Source</TabButton>
+        <TabButton active={tab === 'form'} onClick={() => setTab('form')} icon={<ListChecks size={16} />}>Form</TabButton>
+        <TabButton active={tab === 'html'} onClick={() => setTab('html')} icon={<Code2 size={16} />}>Compiled</TabButton>
+        <TabButton active={tab === 'fields'} onClick={() => setTab('fields')} icon={<Database size={16} />}>Schema</TabButton>
       </div>
       <div className="relative min-h-0 flex-1">
         {tab === 'reb' && <Editor height="100%" defaultLanguage="html" theme="vs-dark" value={source} onChange={(v) => edit(v ?? '')} onMount={onMount} options={editorOptions} />}
@@ -334,17 +320,17 @@ export default function EditorView({ templateId }: { templateId: string }) {
       </div>
       {markers.length > 0 && (
         <div className="shrink-0 border-t border-brand-steel-light bg-brand-steel">
-          <button type="button" onClick={() => setShowProblems((v) => !v)} className="flex w-full items-center gap-3 px-3 py-1.5 text-xs font-semibold text-slate-300">
+          <button type="button" onClick={() => setShowProblems((v) => !v)} className="flex w-full items-center gap-3 px-4 py-2 text-sm font-semibold text-slate-300">
             Problems
-            {errorCount > 0 && <span className="flex items-center gap-1 text-red-400"><CircleAlert size={13} />{errorCount}</span>}
-            {warningCount > 0 && <span className="flex items-center gap-1 text-amber-400"><AlertTriangle size={13} />{warningCount}</span>}
+            {errorCount > 0 && <span className="flex items-center gap-1 text-red-400"><CircleAlert size={15} />{errorCount}</span>}
+            {warningCount > 0 && <span className="flex items-center gap-1 text-amber-400"><AlertTriangle size={15} />{warningCount}</span>}
           </button>
           {showProblems && (
-            <ul className="max-h-32 overflow-y-auto pb-1">
+            <ul className="max-h-40 overflow-y-auto pb-1">
               {markers.map((marker, i) => (
                 <li key={i}>
-                  <button type="button" onClick={() => reveal(marker.line, marker.column)} className="flex w-full items-start gap-2 px-3 py-1 text-left text-xs hover:bg-white/5">
-                    {marker.severity === 'error' ? <CircleAlert size={13} className="mt-0.5 shrink-0 text-red-400" /> : <AlertTriangle size={13} className="mt-0.5 shrink-0 text-amber-400" />}
+                  <button type="button" onClick={() => reveal(marker.line, marker.column)} className="flex w-full items-start gap-2 px-4 py-1.5 text-left text-sm hover:bg-white/5">
+                    {marker.severity === 'error' ? <CircleAlert size={15} className="mt-0.5 shrink-0 text-red-400" /> : <AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-400" />}
                     <span className="flex-1 text-slate-300">{marker.message}</span>
                     <span className="font-mono text-slate-500">{marker.line}:{marker.column}</span>
                   </button>
@@ -360,26 +346,35 @@ export default function EditorView({ templateId }: { templateId: string }) {
   const previewPane = (
     <div className="flex h-full w-full flex-col overflow-hidden">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-brand-steel px-4 py-2">
-        <div className="flex min-w-0 items-center gap-3 text-xs">
-          <span className="flex items-center gap-2 font-bold uppercase tracking-wider text-slate-400"><Eye size={14} /> Preview</span>
-          <span className="truncate text-slate-500">sample answers</span>
-          {preview.rendering && <span className="animate-pulse font-semibold text-brand-amber">Rendering…</span>}
-          {!preview.rendering && preview.pages > 0 && <span className="text-slate-500">{preview.pages} page{preview.pages === 1 ? '' : 's'}</span>}
+        <div className="flex min-w-0 items-center gap-3 text-sm">
+          <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400"><Eye size={16} /> Preview</span>
+          <span className="truncate text-slate-500 max-xl:hidden">sample answers</span>
+          {preview.rendering && <span className="animate-pulse whitespace-nowrap font-semibold text-brand-amber">Rendering…</span>}
+          {!preview.rendering && preview.pages > 0 && <span className="whitespace-nowrap text-slate-500">{preview.pages} page{preview.pages === 1 ? '' : 's'}</span>}
           {preview.error && <span className="truncate text-red-400" title={preview.error}>{preview.error}</span>}
         </div>
         <div className="flex items-center gap-1">
-          <button type="button" aria-label="Zoom out" onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))} className="rounded px-2 py-0.5 text-sm font-bold text-slate-400 hover:text-white">−</button>
-          <span className="w-10 text-center text-[11px] text-slate-400">{Math.round(zoom * 100)}%</span>
-          <button type="button" aria-label="Zoom in" onClick={() => setZoom((z) => Math.min(3, z + 0.25))} className="rounded px-2 py-0.5 text-sm font-bold text-slate-400 hover:text-white">+</button>
+          <button type="button" aria-label="Zoom out" onClick={() => setZoom(Math.max(0.25, Math.ceil(shownZoom * 4 - 1) / 4))} className="rounded-md px-2.5 py-1 text-base font-bold text-slate-400 hover:bg-white/5 hover:text-white">−</button>
+          <span className="w-12 text-center text-sm tabular-nums text-slate-400">{Math.round(shownZoom * 100)}%</span>
+          <button type="button" aria-label="Zoom in" onClick={() => setZoom(Math.min(3, Math.floor(shownZoom * 4 + 1) / 4))} className="rounded-md px-2.5 py-1 text-base font-bold text-slate-400 hover:bg-white/5 hover:text-white">+</button>
+          <button
+            type="button"
+            aria-pressed={zoom === 'fit'}
+            title="Fit the page to the pane's width"
+            onClick={() => setZoom('fit')}
+            className={clsx('rounded-md px-2.5 py-1 text-sm font-semibold', zoom === 'fit' ? 'bg-brand-amber/15 text-brand-amber' : 'text-slate-400 hover:bg-white/5 hover:text-white')}
+          >
+            Fit
+          </button>
           {IS_DESKTOP ? (
-            <Button size="sm" icon={<FileDown size={14} />} onClick={savePdf} className="ml-2">Save PDF</Button>
+            <Button size="sm" icon={<FileDown size={16} />} onClick={savePdf} className="ml-2">Save PDF</Button>
           ) : (
-            <Button size="sm" icon={<Printer size={14} />} onClick={() => previewRef.current?.print()} className="ml-2">Print</Button>
+            <Button size="sm" icon={<Printer size={16} />} onClick={() => previewRef.current?.print()} className="ml-2">Print</Button>
           )}
         </div>
       </div>
       <div className="relative min-h-0 flex-1 bg-[#52525b]">
-        <Preview ref={previewRef} html={rendered.html} files={rendered.files} fontCss={rendered.fontCss} zoom={zoom} onState={setPreview} />
+        <Preview ref={previewRef} html={rendered.html} files={rendered.files} fontCss={rendered.fontCss} zoom={zoom} onState={setPreview} onZoom={setShownZoom} />
       </div>
     </div>
   );
@@ -388,14 +383,14 @@ export default function EditorView({ templateId }: { templateId: string }) {
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-white/10 bg-brand-steel px-4 py-2.5">
-        <a href="#/" aria-label="Back to templates" className="rounded-md p-1.5 text-slate-400 hover:bg-white/5 hover:text-white"><ArrowLeft size={18} /></a>
-        <button type="button" onClick={() => setDialog('details')} className="min-w-0 max-w-[40ch] truncate text-left text-sm font-bold text-white hover:text-brand-amber" title="Edit name, description and tags">
+      <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-brand-steel px-5 py-3">
+        <a href="#/" aria-label="Back to templates" className="rounded-md p-2 text-slate-400 hover:bg-white/5 hover:text-white"><ArrowLeft size={20} /></a>
+        <button type="button" onClick={() => setDialog('details')} className="min-w-0 max-w-[40ch] truncate text-left text-lg font-bold text-white hover:text-brand-amber" title="Edit name, description and tags">
           {template.name}
         </button>
         <Badge>v{version.number}</Badge>
-        <span className="flex items-center gap-1 text-[11px] text-slate-500" aria-live="polite">
-          {saving === 'saved' && (<><Check size={12} /> Saved</>)}
+        <span className="flex items-center gap-1 text-sm text-slate-500" aria-live="polite">
+          {saving === 'saved' && (<><Check size={14} /> Saved</>)}
           {saving === 'pending' && 'Saving…'}
           {saving === 'error' && <span className="text-red-400">Not saved</span>}
         </span>
@@ -403,24 +398,24 @@ export default function EditorView({ templateId }: { templateId: string }) {
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <div className="flex items-center rounded-md bg-brand-steel-light p-0.5" role="group" aria-label="Layout">
             {([['split', Columns2, 'Side by side'], ['stacked', Rows2, 'Stacked'], ['tabs', SquareStack, 'Tabs']] as const).map(([mode, Icon, title]) => (
-              <button key={mode} type="button" title={title} aria-label={title} aria-pressed={layout === mode} onClick={() => setLayout(mode)} className={clsx('rounded px-2 py-1', layout === mode ? 'bg-brand-amber text-brand-steel' : 'text-zinc-400 hover:text-white')}>
-                <Icon size={14} />
+              <button key={mode} type="button" title={title} aria-label={title} aria-pressed={layout === mode} onClick={() => setLayout(mode)} className={clsx('rounded px-2.5 py-1.5', layout === mode ? 'bg-brand-amber text-brand-steel' : 'text-zinc-400 hover:text-white')}>
+                <Icon size={16} />
               </button>
             ))}
           </div>
-          <Button size="sm" icon={<Image size={14} />} onClick={() => setDialog('assets')}>Images</Button>
-          <Button size="sm" icon={<History size={14} />} onClick={() => setDialog('versions')}>Versions</Button>
+          <Button size="sm" icon={<Image size={16} />} onClick={() => setDialog('assets')}>Images</Button>
+          <Button size="sm" icon={<History size={16} />} onClick={() => setDialog('versions')}>Versions</Button>
           <Menu
             label="Export"
-            icon={<Download size={16} />}
+            icon={<Download size={18} />}
             items={[
-              { label: 'Template pack (.rebpack)', icon: <Package size={15} />, run: async () => download(`${safeFileName(template.name)}.rebpack`, await buildRebpack(template, version), 'application/zip', 'rebpack', 'Rebar template pack') },
-              { label: 'Source (.reb)', icon: <FileCode2 size={15} />, run: () => download(`${safeFileName(template.name)}.reb`, source, 'text/plain', 'reb', '.reb template') },
-              { label: 'Compiled HTML', icon: <Code2 size={15} />, disabled: !lastGood, run: () => download(`${safeFileName(template.name)}.html`, lastGood?.htmlSource ?? '', 'text/html', 'html', 'HTML') },
-              { label: 'Schema (JSON)', icon: <Database size={15} />, disabled: !lastGood, run: () => download(`${safeFileName(template.name)}.schema.json`, JSON.stringify(lastGood?.fields ?? {}, null, 2), 'application/json', 'json', 'JSON') },
+              { label: 'Template pack (.rebpack)', icon: <Package size={17} />, run: async () => download(`${safeFileName(template.name)}.rebpack`, await buildRebpack(template, version), 'application/zip', 'rebpack', 'Rebar template pack') },
+              { label: 'Source (.reb)', icon: <FileCode2 size={17} />, run: () => download(`${safeFileName(template.name)}.reb`, source, 'text/plain', 'reb', '.reb template') },
+              { label: 'Compiled HTML', icon: <Code2 size={17} />, disabled: !lastGood, run: () => download(`${safeFileName(template.name)}.html`, lastGood?.htmlSource ?? '', 'text/html', 'html', 'HTML') },
+              { label: 'Schema (JSON)', icon: <Database size={17} />, disabled: !lastGood, run: () => download(`${safeFileName(template.name)}.schema.json`, JSON.stringify(lastGood?.fields ?? {}, null, 2), 'application/json', 'json', 'JSON') },
             ]}
           />
-          <Button size="sm" variant="primary" icon={<FilePlus2 size={14} />} onClick={newDocument} disabled={!!compileError}>
+          <Button size="sm" variant="primary" icon={<FilePlus2 size={16} />} onClick={newDocument} disabled={!!compileError}>
             New document
           </Button>
         </div>
@@ -428,20 +423,20 @@ export default function EditorView({ templateId }: { templateId: string }) {
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {sidebar ? (
-          <aside aria-label="Components" className="flex w-56 shrink-0 flex-col border-r border-brand-steel-light bg-[#191919]">
-            <div className="flex items-center justify-between border-b border-brand-steel-light bg-brand-steel p-3 text-xs font-bold uppercase tracking-wider text-zinc-400">
-              <span className="flex items-center gap-2"><LayoutTemplate size={14} /> Components</span>
-              <button type="button" aria-label="Hide components" onClick={() => setSidebar(false)} className="text-zinc-500 hover:text-brand-amber"><PanelLeftClose size={16} /></button>
+          <aside aria-label="Components" className="flex w-60 shrink-0 flex-col border-r border-brand-steel-light bg-[#191919]">
+            <div className="flex items-center justify-between border-b border-brand-steel-light bg-brand-steel px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-400">
+              <span className="flex items-center gap-2"><LayoutTemplate size={16} /> Components</span>
+              <button type="button" aria-label="Hide components" onClick={() => setSidebar(false)} className="text-zinc-500 hover:text-brand-amber"><PanelLeftClose size={18} /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               {groups.map((group) => (
                 <div key={group} className="mb-3">
-                  <p className="px-1 pb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-500">{group}</p>
+                  <p className="px-1 pb-1.5 text-xs font-bold uppercase tracking-widest text-zinc-500">{group}</p>
                   <div className="flex flex-col gap-1">
                     {SNIPPETS.filter((s) => s.group === group).map((item) => (
-                      <button key={item.label} type="button" title={item.help} onClick={() => insert(item.snippet)} className="group flex items-center justify-between rounded border border-[#333] bg-[#252526] px-3 py-1.5 text-left text-[11px] font-medium text-zinc-300 hover:border-[#444] hover:bg-[#2d2d2d] hover:text-white">
+                      <button key={item.label} type="button" title={item.help} onClick={() => insert(item.snippet)} className="group flex items-center justify-between rounded-md border border-[#333] bg-[#252526] px-3 py-1.5 text-left text-sm font-medium text-zinc-300 hover:border-[#444] hover:bg-[#2d2d2d] hover:text-white">
                         {item.label}
-                        <PlusCircle size={13} className="text-brand-amber opacity-0 transition-opacity group-hover:opacity-100" />
+                        <PlusCircle size={15} className="text-brand-amber opacity-0 transition-opacity group-hover:opacity-100" />
                       </button>
                     ))}
                   </div>
@@ -450,16 +445,16 @@ export default function EditorView({ templateId }: { templateId: string }) {
             </div>
           </aside>
         ) : (
-          <div className="flex w-10 shrink-0 flex-col items-center gap-3 border-r border-brand-steel-light bg-[#191919] py-3">
-            <button type="button" aria-label="Show components" onClick={() => setSidebar(true)} className="text-zinc-400 hover:text-brand-amber"><PanelLeftOpen size={18} /></button>
+          <div className="flex w-12 shrink-0 flex-col items-center gap-3 border-r border-brand-steel-light bg-[#191919] py-3">
+            <button type="button" aria-label="Show components" onClick={() => setSidebar(true)} className="text-zinc-400 hover:text-brand-amber"><PanelLeftOpen size={20} /></button>
           </div>
         )}
 
         {layout === 'tabs' ? (
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             <div role="tablist" className="flex shrink-0 border-b border-brand-steel-light bg-brand-steel">
-              <TabButton active={mainView === 'editor'} onClick={() => setMainView('editor')} icon={<FileCode2 size={14} />}>Editor</TabButton>
-              <TabButton active={mainView === 'preview'} onClick={() => setMainView('preview')} icon={<Eye size={14} />}>Preview</TabButton>
+              <TabButton active={mainView === 'editor'} onClick={() => setMainView('editor')} icon={<FileCode2 size={16} />}>Editor</TabButton>
+              <TabButton active={mainView === 'preview'} onClick={() => setMainView('preview')} icon={<Eye size={16} />}>Preview</TabButton>
             </div>
             <div className="min-h-0 flex-1">{mainView === 'editor' ? editorPane : previewPane}</div>
           </div>

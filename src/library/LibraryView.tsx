@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { navigate } from '../app/router';
-import { Badge, Button, Dialog, EmptyState, Menu, TextInput } from '../components/ui';
+import { Badge, Button, Dialog, EmptyState, Menu, PageHeader, TextInput } from '../components/ui';
 import { errorMessage, formatDate } from '../components/format';
 import { useConfirm } from '../components/useConfirm';
 import { useToast } from '../components/toast';
@@ -133,71 +133,67 @@ export function LibraryView() {
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="flex flex-wrap items-center gap-3 border-b border-white/10 bg-brand-steel px-6 py-4">
-        <div className="mr-auto">
-          <h1 className="text-lg font-bold text-white">Templates</h1>
-          <p className="text-xs text-slate-400">Author .reb templates, then fill documents from them.</p>
-        </div>
-        <Button icon={<Upload size={16} />} onClick={importFiles}>
+      <PageHeader title="Templates" description="Author .reb templates, then fill documents from them.">
+        <Button icon={<Upload size={18} />} onClick={importFiles}>
           Import
         </Button>
-        <Button variant="primary" icon={<Plus size={16} />} onClick={() => setGallery(true)}>
+        <Button variant="primary" icon={<Plus size={18} />} onClick={() => setGallery(true)}>
           New template
         </Button>
-      </header>
+      </PageHeader>
 
-      <div className="flex flex-wrap items-center gap-2 px-6 py-3">
-        <div className="relative w-full max-w-xs">
-          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <TextInput aria-label="Search templates" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-9" />
+      <div className="flex flex-wrap items-center gap-2 px-8 py-4">
+        <div className="relative w-full max-w-sm">
+          <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <TextInput aria-label="Search templates" placeholder="Search" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-10" />
         </div>
         {tags.map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTag(tag === t ? null : t)}
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${tag === t ? 'bg-brand-amber text-brand-steel' : 'bg-white/5 text-slate-300 hover:bg-white/10'}`}
+            className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${tag === t ? 'bg-brand-amber text-brand-steel' : 'bg-white/5 text-slate-300 hover:bg-white/10'}`}
           >
             {t}
           </button>
         ))}
-        <label className="ml-auto flex items-center gap-2 text-xs text-slate-400">
+        <label className="ml-auto flex items-center gap-2 text-sm text-slate-400">
           <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} className="accent-brand-amber" />
           Archived
         </label>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-8">
+      <div className="flex-1 overflow-y-auto px-8 pb-10">
         {rows !== null && visible.length === 0 ? (
           <EmptyState icon={<LayoutTemplate size={36} />} title={showArchived ? 'No archived templates' : 'No templates here'}>
             {showArchived ? 'Archived templates are kept with their documents but hidden from the library.' : 'Start from a starter template, or import a .reb or .rebpack file.'}
           </EmptyState>
         ) : (
-          <ul className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5">
             {visible.map((row) => (
-              <li key={row.template.id} className="group flex flex-col rounded-xl border border-white/10 bg-brand-steel p-4 transition hover:border-brand-amber/50">
+              <li key={row.template.id} className="group flex flex-col rounded-xl border border-white/10 bg-brand-steel p-5 transition hover:border-brand-amber/50">
                 <div className="flex items-start gap-2">
                   <a href={`#/templates/${row.template.id}`} className="min-w-0 flex-1">
-                    <h2 className="truncate font-bold text-white group-hover:text-brand-amber">{row.template.name}</h2>
-                    <p className="mt-1 line-clamp-2 text-xs text-slate-400">{row.template.description || 'No description'}</p>
+                    <h2 className="truncate text-lg font-bold text-white group-hover:text-brand-amber">{row.template.name}</h2>
+                    <p className="mt-1 line-clamp-3 text-sm text-slate-400">{row.template.description || 'No description'}</p>
                   </a>
                   <Menu
                     label={`Actions for ${row.template.name}`}
-                    icon={<MoreVertical size={16} />}
+                    icon={<MoreVertical size={18} />}
                     items={[
-                      { label: 'Edit template', icon: <Pencil size={15} />, run: () => navigate({ name: 'editor', id: row.template.id }) },
+                      { label: 'Edit template', icon: <Pencil size={17} />, run: () => navigate({ name: 'editor', id: row.template.id }) },
                       {
                         label: 'New document',
-                        icon: <FilePlus2 size={15} />,
+                        icon: <FilePlus2 size={17} />,
                         disabled: !row.version.compiled,
                         run: () => run(async () => navigate({ name: 'document', id: (await createDocument(row.template.id)).id })),
                       },
-                      { label: 'Documents', icon: <FileText size={15} />, run: () => navigate({ name: 'documents', templateId: row.template.id }) },
-                      { label: 'Duplicate', icon: <Copy size={15} />, run: () => run(() => duplicateTemplate(row.template.id), 'Template duplicated') },
-                      { label: 'Export .rebpack', icon: <Package size={15} />, run: () => exportPack(row) },
+                      { label: 'Documents', icon: <FileText size={17} />, run: () => navigate({ name: 'documents', templateId: row.template.id }) },
+                      { label: 'Duplicate', icon: <Copy size={17} />, run: () => run(() => duplicateTemplate(row.template.id), 'Template duplicated') },
+                      { label: 'Export .rebpack', icon: <Package size={17} />, run: () => exportPack(row) },
                       {
                         label: 'Export .reb source',
-                        icon: <Download size={15} />,
+                        icon: <Download size={17} />,
                         run: () =>
                           run(() =>
                             saveFile({
@@ -209,9 +205,9 @@ export function LibraryView() {
                           ),
                       },
                       row.template.archived
-                        ? { label: 'Unarchive', icon: <ArchiveRestore size={15} />, run: () => run(() => updateTemplate(row.template.id, { archived: false })) }
-                        : { label: 'Archive', icon: <Archive size={15} />, run: () => run(() => updateTemplate(row.template.id, { archived: true }), 'Template archived') },
-                      { label: 'Delete', icon: <Trash2 size={15} />, danger: true, run: () => remove(row) },
+                        ? { label: 'Unarchive', icon: <ArchiveRestore size={17} />, run: () => run(() => updateTemplate(row.template.id, { archived: false })) }
+                        : { label: 'Archive', icon: <Archive size={17} />, run: () => run(() => updateTemplate(row.template.id, { archived: true }), 'Template archived') },
+                      { label: 'Delete', icon: <Trash2 size={17} />, danger: true, run: () => remove(row) },
                     ]}
                   />
                 </div>
@@ -222,21 +218,20 @@ export function LibraryView() {
                     <Badge key={t} tone="amber">{t}</Badge>
                   ))}
                 </div>
-                <div className="mt-auto flex items-center justify-between pt-4 text-xs text-slate-500">
+                <div className="mt-auto flex items-center justify-between pt-5 text-xs text-slate-500">
                   <a href={`#/documents?template=${row.template.id}`} className="hover:text-white">
                     {row.documents} document{row.documents === 1 ? '' : 's'}
                   </a>
                   <span>Edited {formatDate(row.template.updatedAt)}</span>
                 </div>
-                <div className="mt-3 flex gap-2">
-                  <Button size="sm" className="flex-1" icon={<Pencil size={14} />} onClick={() => navigate({ name: 'editor', id: row.template.id })}>
+                <div className="mt-4 flex gap-2">
+                  <Button className="flex-1" icon={<Pencil size={16} />} onClick={() => navigate({ name: 'editor', id: row.template.id })}>
                     Edit
                   </Button>
                   <Button
-                    size="sm"
                     variant="primary"
                     className="flex-1"
-                    icon={<FilePlus2 size={14} />}
+                    icon={<FilePlus2 size={16} />}
                     disabled={!row.version.compiled}
                     title={row.version.compiled ? undefined : 'Fix the template before filling documents'}
                     onClick={() => run(async () => navigate({ name: 'document', id: (await createDocument(row.template.id)).id }))}
@@ -252,20 +247,20 @@ export function LibraryView() {
 
       {gallery && (
         <Dialog title="New template" onClose={() => setGallery(false)} wide>
-          <p className="mb-4 text-slate-400">Start from a blank page or a starter, then make it your own.</p>
-          <ul className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
+          <p className="mb-5 text-slate-400">Start from a blank page or a starter, then make it your own.</p>
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
             <li>
-              <button type="button" onClick={() => createFrom(null)} className="flex h-full w-full flex-col rounded-lg border border-dashed border-white/20 p-4 text-left hover:border-brand-amber">
-                <span className="font-bold text-white">Blank template</span>
-                <span className="mt-1 text-xs text-slate-400">A title and one field.</span>
+              <button type="button" onClick={() => createFrom(null)} className="flex h-full w-full flex-col rounded-lg border border-dashed border-white/20 p-5 text-left hover:border-brand-amber">
+                <span className="text-base font-bold text-white">Blank template</span>
+                <span className="mt-1 text-sm text-slate-400">A title and one field.</span>
               </button>
             </li>
             {STARTERS.map((starter) => (
               <li key={starter.id}>
-                <button type="button" onClick={() => createFrom(starter)} className="flex h-full w-full flex-col rounded-lg border border-white/10 bg-brand-steel-dark p-4 text-left hover:border-brand-amber">
-                  <span className="font-bold text-white">{starter.name}</span>
-                  <span className="mt-1 text-xs text-slate-400">{starter.description}</span>
-                  <span className="mt-3 flex gap-1">
+                <button type="button" onClick={() => createFrom(starter)} className="flex h-full w-full flex-col rounded-lg border border-white/10 bg-brand-steel-dark p-5 text-left hover:border-brand-amber">
+                  <span className="text-base font-bold text-white">{starter.name}</span>
+                  <span className="mt-1 text-sm text-slate-400">{starter.description}</span>
+                  <span className="mt-auto flex gap-1 pt-3">
                     {starter.tags.map((t) => (
                       <Badge key={t} tone="amber">{t}</Badge>
                     ))}

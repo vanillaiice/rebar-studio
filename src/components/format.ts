@@ -3,8 +3,11 @@
 
 // Formatting helpers and shared class names.
 
-export const inputClass =
-  'w-full rounded-md border border-white/10 bg-brand-steel-dark px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-brand-amber focus:outline-none disabled:opacity-60';
+// inputBase has no width, for a control sized by its content (w-full and w-auto in one class list
+// leave the winner to the stylesheet's order).
+export const inputBase =
+  'rounded-md border border-white/10 bg-brand-steel-dark px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-brand-amber focus:outline-none disabled:opacity-60';
+export const inputClass = `w-full ${inputBase}`;
 
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return '';

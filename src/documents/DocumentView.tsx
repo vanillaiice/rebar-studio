@@ -79,7 +79,7 @@ export function DocumentView({ documentId }: { documentId: string }) {
   if (!loaded) {
     return (
       <div className="flex h-full items-center justify-center gap-3 text-sm text-slate-400">
-        <Loader2 className="animate-spin" size={18} /> Opening the document…
+        <Loader2 className="animate-spin" size={20} /> Opening the document…
       </div>
     );
   }
@@ -260,54 +260,54 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-white/10 bg-brand-steel px-4 py-2.5">
-        <a href="#/documents" aria-label="Back to documents" className="rounded-md p-1.5 text-slate-400 hover:bg-white/5 hover:text-white"><ArrowLeft size={18} /></a>
+      <header className="flex shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-brand-steel px-5 py-3">
+        <a href="#/documents" aria-label="Back to documents" className="rounded-md p-2 text-slate-400 hover:bg-white/5 hover:text-white"><ArrowLeft size={20} /></a>
         <div className="min-w-0">
-          <button type="button" disabled={final} onClick={() => setDetails(true)} className="block max-w-[50ch] truncate text-left text-sm font-bold text-white enabled:hover:text-brand-amber">
+          <button type="button" disabled={final} onClick={() => setDetails(true)} className="block max-w-[50ch] truncate text-left text-lg font-bold text-white enabled:hover:text-brand-amber">
             {document.title}
           </button>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-xs text-slate-500">
             <span className="font-mono">{document.reference}</span>
             {document.revision > 1 && <> · revision {document.revision}</>} · <a href={`#/templates/${template.id}`} className="hover:text-white">{template.name} v{version.number}</a>
           </p>
         </div>
         <StatusBadge document={document} />
         {!final && (
-          <span className="flex items-center gap-1 text-[11px] text-slate-500" aria-live="polite">
-            {state.dirty ? 'Saving…' : (<><Check size={12} /> Saved</>)}
+          <span className="flex items-center gap-1 text-sm text-slate-500" aria-live="polite">
+            {state.dirty ? 'Saving…' : (<><Check size={14} /> Saved</>)}
           </span>
         )}
-        {busy && <span className="flex items-center gap-2 text-xs text-brand-amber"><Loader2 size={14} className="animate-spin" />{busy}</span>}
+        {busy && <span className="flex items-center gap-2 text-xs text-brand-amber"><Loader2 size={16} className="animate-spin" />{busy}</span>}
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {!final && (
             <>
-              <button type="button" aria-label="Undo" title="Undo (Ctrl+Z)" disabled={!state.canUndo} onClick={state.undo} className="rounded-md p-1.5 text-slate-400 hover:bg-white/5 hover:text-white disabled:opacity-30"><Undo2 size={16} /></button>
-              <button type="button" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled={!state.canRedo} onClick={state.redo} className="rounded-md p-1.5 text-slate-400 hover:bg-white/5 hover:text-white disabled:opacity-30"><Redo2 size={16} /></button>
-              <Button size="sm" variant="ghost" icon={livePdf ? <EyeOff size={14} /> : <Eye size={14} />} onClick={() => setLivePdf((v) => !v)}>
+              <button type="button" aria-label="Undo" title="Undo (Ctrl+Z)" disabled={!state.canUndo} onClick={state.undo} className="rounded-md p-2 text-slate-400 hover:bg-white/5 hover:text-white disabled:opacity-30"><Undo2 size={18} /></button>
+              <button type="button" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" disabled={!state.canRedo} onClick={state.redo} className="rounded-md p-2 text-slate-400 hover:bg-white/5 hover:text-white disabled:opacity-30"><Redo2 size={18} /></button>
+              <Button size="sm" variant="ghost" icon={livePdf ? <EyeOff size={16} /> : <Eye size={16} />} onClick={() => setLivePdf((v) => !v)}>
                 {livePdf ? 'Hide preview' : 'Preview'}
               </Button>
             </>
           )}
           {IS_DESKTOP ? (
-            <Button size="sm" icon={<FileDown size={14} />} onClick={exportPdf}>Export PDF</Button>
+            <Button size="sm" icon={<FileDown size={16} />} onClick={exportPdf}>Export PDF</Button>
           ) : (
-            !final && livePdf && <Button size="sm" icon={<Printer size={14} />} onClick={() => previewRef.current?.print()}>Print</Button>
+            !final && livePdf && <Button size="sm" icon={<Printer size={16} />} onClick={() => previewRef.current?.print()}>Print</Button>
           )}
           {final ? (
-            <Button size="sm" variant="primary" icon={<RotateCcw size={14} />} onClick={() => run('Reopening…', async () => navigate({ name: 'document', id: (await reopenAsRevision(document.id)).id }))}>
+            <Button size="sm" variant="primary" icon={<RotateCcw size={16} />} onClick={() => run('Reopening…', async () => navigate({ name: 'document', id: (await reopenAsRevision(document.id)).id }))}>
               Reopen as revision
             </Button>
           ) : (
-            <Button size="sm" variant="primary" icon={<Lock size={14} />} onClick={finalize}>Finalize</Button>
+            <Button size="sm" variant="primary" icon={<Lock size={16} />} onClick={finalize}>Finalize</Button>
           )}
           <Menu
             label="More actions"
-            icon={<MoreVertical size={16} />}
+            icon={<MoreVertical size={18} />}
             items={[
-              { label: 'Export .rebdoc', icon: <Package size={15} />, run: exportRebdoc },
-              { label: 'Duplicate', icon: <Copy size={15} />, run: () => run('Duplicating…', async () => { await state.flush(); navigate({ name: 'document', id: (await duplicateDocument(document.id)).id }); }) },
-              { label: 'History', icon: <ShieldCheck size={15} />, run: () => setDetails(true) },
-              { label: 'Delete', icon: <Trash2 size={15} />, danger: true, run: remove },
+              { label: 'Export .rebdoc', icon: <Package size={17} />, run: exportRebdoc },
+              { label: 'Duplicate', icon: <Copy size={17} />, run: () => run('Duplicating…', async () => { await state.flush(); navigate({ name: 'document', id: (await duplicateDocument(document.id)).id }); }) },
+              { label: 'History', icon: <ShieldCheck size={17} />, run: () => setDetails(true) },
+              { label: 'Delete', icon: <Trash2 size={17} />, danger: true, run: remove },
             ]}
           />
         </div>
@@ -315,7 +315,7 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
 
       {outdated && (
         <div className="flex flex-wrap items-center gap-3 border-b border-brand-amber/30 bg-brand-amber/10 px-4 py-2 text-sm text-amber-100">
-          <ArrowUpCircle size={16} className="text-brand-amber" />
+          <ArrowUpCircle size={18} className="text-brand-amber" />
           This draft uses v{version.number} of the template; v{latest!.number} is the latest.
           <Button
             size="sm"
@@ -336,29 +336,29 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {final ? (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="flex flex-wrap items-center gap-3 border-b border-white/10 bg-emerald-950/40 px-4 py-2 text-xs text-emerald-200">
-              <Lock size={14} /> Finalized {formatDate(document.finalizedAt)}
+            <div className="flex flex-wrap items-center gap-3 border-b border-white/10 bg-emerald-950/40 px-5 py-2.5 text-sm text-emerald-200">
+              <Lock size={16} /> Finalized {formatDate(document.finalizedAt)}
               <span className="font-mono text-emerald-300/70" title="SHA-256 of the final rendition">SHA-256 {document.pdfHash?.slice(0, 16)}…</span>
             </div>
             <div className="min-h-0 flex-1 bg-[#52525b]"><FinalRendition document={document} /></div>
           </div>
         ) : (
           <>
-            <div className={clsx('min-w-0 overflow-y-auto px-6 py-6', livePdf ? 'w-1/2 max-lg:w-full' : 'flex-1')}>
-              <div className="mx-auto max-w-3xl">
+            <div className={clsx('min-w-0 overflow-y-auto px-8 py-8', livePdf ? 'w-1/2 max-lg:w-full' : 'flex-1')}>
+              <div className="mx-auto max-w-4xl">
                 <FormView fields={fields.fields} state={state} files={files} photo={settings.photos} showAllErrors={showErrors} focus={focus} />
               </div>
             </div>
             {livePdf && (
               <div className="flex min-w-0 flex-1 flex-col border-l border-white/10 max-lg:hidden">
-                <div className="flex items-center gap-3 border-b border-white/10 bg-brand-steel px-4 py-2 text-xs text-slate-400">
-                  <Eye size={14} /> Live preview
+                <div className="flex items-center gap-3 border-b border-white/10 bg-brand-steel px-5 py-2.5 text-sm text-slate-400">
+                  <Eye size={16} /> Live preview
                   {previewState.rendering && <span className="animate-pulse text-brand-amber">Rendering…</span>}
                   {previewState.pages > 0 && !previewState.rendering && <span>{previewState.pages} page{previewState.pages === 1 ? '' : 's'}</span>}
                   {previewState.error && <span className="truncate text-red-400">{previewState.error}</span>}
                 </div>
                 <div className="min-h-0 flex-1 bg-[#52525b]">
-                  <Preview ref={previewRef} html={rendered.html} files={rendered.files} fontCss={rendered.fontCss} zoom={0.75} onState={setPreviewState} />
+                  <Preview ref={previewRef} html={rendered.html} files={rendered.files} fontCss={rendered.fontCss} zoom="fit" onState={setPreviewState} />
                 </div>
               </div>
             )}
@@ -397,7 +397,7 @@ function DetailsDialog({ document, onSaved, onClose }: { document: StudioDocumen
           </ul>
         </div>
         {document.pdfHash && (
-          <p className="break-all font-mono text-[11px] text-slate-500">
+          <p className="break-all font-mono text-xs text-slate-500">
             <Badge tone="green">SHA-256</Badge> {document.pdfHash}
           </p>
         )}

@@ -8,8 +8,8 @@ import { CheckSquare, FileDown, FilePlus2, FileSpreadsheet, FileText, Loader2, P
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { navigate } from '../app/router';
 import { useSettings } from '../app/useSettings';
-import { Badge, Button, Dialog, EmptyState, Menu, TextInput } from '../components/ui';
-import { errorMessage, formatDate, inputClass } from '../components/format';
+import { Badge, Button, Dialog, EmptyState, Menu, PageHeader, TextInput } from '../components/ui';
+import { errorMessage, formatDate, inputBase } from '../components/format';
 import { useConfirm } from '../components/useConfirm';
 import { useToast } from '../components/toast';
 import { buildRebdoc, importRebdoc } from '../formats/rebdoc';
@@ -157,51 +157,47 @@ export function DocumentsView({ templateId }: { templateId: string | null }) {
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="flex flex-wrap items-center gap-3 border-b border-white/10 bg-brand-steel px-6 py-4">
-        <div className="mr-auto min-w-0">
-          <h1 className="truncate text-lg font-bold text-white">{filterTemplate ? `${filterTemplate.name}: documents` : 'Documents'}</h1>
-          <p className="text-xs text-slate-400">Fill documents from your templates; finalize them to lock their PDF.</p>
-        </div>
-        <Button icon={<Upload size={16} />} onClick={importFiles}>Import .rebdoc</Button>
+      <PageHeader title={filterTemplate ? `${filterTemplate.name}: documents` : 'Documents'} description="Fill documents from your templates; finalize them to lock their PDF.">
+        <Button icon={<Upload size={18} />} onClick={importFiles}>Import .rebdoc</Button>
         <Button
           variant="primary"
-          icon={<FilePlus2 size={16} />}
+          icon={<FilePlus2 size={18} />}
           onClick={() => (filterTemplate ? task('Creating…', async () => navigate({ name: 'document', id: (await createDocument(filterTemplate.id)).id })) : setChoosing(true))}
         >
           New document
         </Button>
-      </header>
+      </PageHeader>
 
-      <div className="flex flex-wrap items-center gap-2 px-6 py-3">
-        <div className="relative w-full max-w-xs">
-          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <TextInput aria-label="Search documents" placeholder="Search title, reference, project" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-9" />
+      <div className="flex flex-wrap items-center gap-2 px-8 py-4">
+        <div className="relative w-full max-w-sm">
+          <Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <TextInput aria-label="Search documents" placeholder="Search title, reference, project" value={query} onChange={(e) => setQuery(e.target.value)} className="pl-10" />
         </div>
-        <select aria-label="Template" value={templateId ?? ''} onChange={(e) => navigate({ name: 'documents', templateId: e.target.value || null })} className={`${inputClass} w-auto`}>
+        <select aria-label="Template" value={templateId ?? ''} onChange={(e) => navigate({ name: 'documents', templateId: e.target.value || null })} className={inputBase}>
           <option value="">All templates</option>
           {[...templates.values()].map((t) => (
             <option key={t.id} value={t.id}>{t.name}</option>
           ))}
         </select>
-        <select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)} className={`${inputClass} w-auto`}>
+        <select aria-label="Status" value={status} onChange={(e) => setStatus(e.target.value)} className={inputBase}>
           <option value="">Drafts and final</option>
           <option value="draft">Drafts</option>
           <option value="final">Final</option>
         </select>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          {busy && <span className="flex items-center gap-2 text-xs text-brand-amber"><Loader2 size={14} className="animate-spin" />{busy}</span>}
+          {busy && <span className="flex items-center gap-2 text-xs text-brand-amber"><Loader2 size={16} className="animate-spin" />{busy}</span>}
           {chosen.length > 0 && (
             <>
               <span className="text-xs text-slate-400">{chosen.length} selected</span>
-              {IS_DESKTOP && <Button size="sm" icon={<FileDown size={14} />} onClick={() => exportPdfs(chosen)}>Export PDFs</Button>}
-              <Button size="sm" icon={<Package size={14} />} onClick={() => exportRebdocs(chosen)}>Export .rebdoc</Button>
-              <Button size="sm" variant="danger" icon={<Trash2 size={14} />} onClick={removeSelected}>Delete</Button>
+              {IS_DESKTOP && <Button size="sm" icon={<FileDown size={16} />} onClick={() => exportPdfs(chosen)}>Export PDFs</Button>}
+              <Button size="sm" icon={<Package size={16} />} onClick={() => exportRebdocs(chosen)}>Export .rebdoc</Button>
+              <Button size="sm" variant="danger" icon={<Trash2 size={16} />} onClick={removeSelected}>Delete</Button>
             </>
           )}
           {filterTemplate && (
             <Menu
               label="Export the register"
-              icon={<FileSpreadsheet size={18} />}
+              icon={<FileSpreadsheet size={20} />}
               items={[
                 { label: 'Register as CSV', run: () => exportRegister('csv') },
                 { label: 'Register as JSON', run: () => exportRegister('json') },
@@ -211,7 +207,7 @@ export function DocumentsView({ templateId }: { templateId: string | null }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-6 pb-8">
+      <div className="flex-1 overflow-auto px-8 pb-10">
         {documents !== null && visible.length === 0 ? (
           <EmptyState icon={<FileText size={36} />} title="No documents">
             Create one from a template; it starts as a draft you can fill on any device.
@@ -220,38 +216,38 @@ export function DocumentsView({ templateId }: { templateId: string | null }) {
           <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wider text-slate-500">
-                <th className="w-10 py-2">
+                <th className="w-12 py-3 pl-1">
                   <button type="button" aria-label={allSelected ? 'Select none' : 'Select all'} onClick={() => setSelected(allSelected ? new Set() : new Set(visible.map((d) => d.id)))} className="text-slate-400 hover:text-white">
-                    {allSelected ? <CheckSquare size={16} /> : <Square size={16} />}
+                    {allSelected ? <CheckSquare size={18} /> : <Square size={18} />}
                   </button>
                 </th>
-                <th className="py-2 font-semibold">Reference</th>
-                <th className="py-2 font-semibold">Title</th>
-                <th className="py-2 font-semibold">Template</th>
-                <th className="py-2 font-semibold">Status</th>
-                <th className="py-2 font-semibold">Updated</th>
+                <th className="py-3 pr-4 font-semibold">Reference</th>
+                <th className="py-3 pr-4 font-semibold">Title</th>
+                <th className="py-3 pr-4 font-semibold">Template</th>
+                <th className="py-3 pr-4 font-semibold">Status</th>
+                <th className="py-3 pr-4 font-semibold">Updated</th>
               </tr>
             </thead>
             <tbody>
               {visible.map((document) => (
                 <tr key={document.id} className="border-b border-white/5 hover:bg-white/5">
-                  <td className="py-2.5">
-                    <input type="checkbox" aria-label={`Select ${document.title}`} checked={selected.has(document.id)} onChange={() => toggle(document.id)} className="h-4 w-4 accent-brand-amber" />
+                  <td className="py-3.5 pr-4">
+                    <input type="checkbox" aria-label={`Select ${document.title}`} checked={selected.has(document.id)} onChange={() => toggle(document.id)} className="ml-1 h-[18px] w-[18px] accent-brand-amber" />
                   </td>
-                  <td className="py-2.5 font-mono text-xs text-slate-300">
+                  <td className="py-3.5 pr-4 font-mono text-sm text-slate-300">
                     {document.reference}
                     {document.revision > 1 && <span className="ml-1 text-slate-500">rev {document.revision}</span>}
                   </td>
-                  <td className="py-2.5">
+                  <td className="py-3.5 pr-4">
                     <a href={`#/documents/${document.id}`} className="font-semibold text-white hover:text-brand-amber">{document.title}</a>
                     {document.project && <span className="block text-xs text-slate-500">{document.project}</span>}
                   </td>
-                  <td className="py-2.5 text-slate-400">
+                  <td className="py-3.5 pr-4 text-slate-400">
                     {templates.get(document.templateId)?.name ?? 'Deleted template'}
                     <span className="ml-1 text-xs text-slate-600">v{versionNumbers.get(document.templateVersionId)}</span>
                   </td>
-                  <td className="py-2.5"><StatusBadge document={document} /></td>
-                  <td className="py-2.5 text-xs text-slate-500">{formatDate(document.updatedAt)}</td>
+                  <td className="py-3.5 pr-4"><StatusBadge document={document} /></td>
+                  <td className="py-3.5 pr-4 text-sm text-slate-500">{formatDate(document.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -270,10 +266,10 @@ export function DocumentsView({ templateId }: { templateId: string | null }) {
                     setChoosing(false);
                     void task('Creating…', async () => navigate({ name: 'document', id: (await createDocument(t.id)).id }));
                   }}
-                  className="w-full rounded-lg border border-white/10 px-4 py-3 text-left hover:border-brand-amber"
+                  className="w-full rounded-lg border border-white/10 px-5 py-4 text-left hover:border-brand-amber"
                 >
                   <span className="font-semibold text-white">{t.name}</span>
-                  {t.description && <span className="block text-xs text-slate-400">{t.description}</span>}
+                  {t.description && <span className="mt-0.5 block text-sm text-slate-400">{t.description}</span>}
                 </button>
               </li>
             ))}

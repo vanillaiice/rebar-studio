@@ -6,6 +6,12 @@
   --color-brand-steel: #0f172a;
   --color-brand-steel-light: #1e293b;
   --color-brand-steel-dark: #020617;
+
+  /* A desktop app's reading sizes: Tailwind's two smallest steps, raised (12 and 14px by default). */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.375rem;
 }
 
 :root {
@@ -49,8 +55,8 @@ body {
 
 /* Custom Scrollbar for sleek aesthetic */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -58,10 +64,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--color-brand-amber) 25%, transparent);
+  background-color: color-mix(in srgb, var(--color-brand-amber) 25%, transparent);
+  background-clip: padding-box;
+  border: 2px solid transparent;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--color-brand-amber) 55%, transparent);
+  background-color: color-mix(in srgb, var(--color-brand-amber) 55%, transparent);
 }
