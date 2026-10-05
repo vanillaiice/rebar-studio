@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 
-// What Studio keeps in IndexedDB (docs/plan.md D3). A document always points at an immutable
+// What Studio keeps in IndexedDB. A document always points at an immutable
 // template version, so editing a template never changes existing documents.
 
 import type { Answers, Schema } from '../engine/types';

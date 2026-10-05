@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 
-// The real-data pipeline (plan section 7): a document's answers, checked and computed by the engine
+// The real-data pipeline: a document's answers, checked and computed by the engine
 // (prepare: formulas, hidden fields dropped), rendered with the system values (spec 5.1) and its
 // files named as the engine maps them, plus the template's images, the profile logo and fonts.
 

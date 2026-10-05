@@ -12,7 +12,7 @@
 //   and footer as running elements (named-page orientation is the one thing it cannot do).
 //
 // Both carry a Content-Security-Policy that blocks the network: templates are third-party content
-// and documents hold personal data, so nothing a template writes may leave the machine (plan 9).
+// and documents hold personal data, so nothing a template writes may leave the machine.
 // Files (template images, photos, fonts) are referred to by bare file name.
 
 export type MarginBlock = 'footer' | 'header';

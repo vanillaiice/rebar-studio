@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 
-// .rebbackup: the whole workspace (plan D4), to keep a copy or move to another machine. Browser
+// .rebbackup: the whole workspace, to keep a copy or move to another machine. Browser
 // storage can be evicted, so Studio reminds people to make one.
 //
 //   manifest.json     format version, counts

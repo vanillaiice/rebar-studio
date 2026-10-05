@@ -2,7 +2,7 @@
 // Copyright (C) 2026 hblabs
 
 // Templates and their versions. Editing a template changes its current version in place while no
-// document uses it; once one does, the edit creates the next version instead (docs/plan.md D3), so
+// document uses it; once one does, the edit creates the next version instead, so
 // an autosave per keystroke never creates a version per keystroke and documents never change.
 
 import type { CompileResult } from '../engine/types';

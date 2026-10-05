@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 
-// The form a template produces, built from the engine's normalized schema (plan section 6). Sections
+// The form a template produces, built from the engine's normalized schema. Sections
 // become steps on narrow screens and anchored groups on wide ones. Errors show once a field was
 // touched, or everywhere after an attempt to finalize.
 

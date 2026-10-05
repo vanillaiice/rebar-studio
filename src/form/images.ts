@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 
-// Photos are resized and compressed on the device before they are stored (plan section 6): the
+// Photos are resized and compressed on the device before they are stored: the
 // longest edge at most 2000 px, JPEG, with the camera's EXIF orientation applied. The original is
 // kept instead only when the person asks for it in Settings.
 

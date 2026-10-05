@@ -2,8 +2,8 @@
 // Copyright (C) 2026 hblabs
 
 // A form's answers as typed, and what the engine makes of them: which fields show (show-if), the
-// computed formula and row-number cells, and the refused answers. The engine is the only judge
-// (plan D7), so the form asks it on every change (debounced) instead of evaluating rules itself.
+// computed formula and row-number cells, and the refused answers. The engine is the only judge,
+// so the form asks it on every change (debounced) instead of evaluating rules itself.
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { engine } from '../engine/client';

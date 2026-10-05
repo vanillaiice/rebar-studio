@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 //
-// PDF fidelity (plan section 11): Studio's desktop PDF must match Rebar's. Each starter template is
+// PDF fidelity: Studio's desktop PDF must match Rebar's. Each starter template is
 // rendered with sample answers, then printed twice from the same page: by the desktop app's renderer
 // (Electron's printToPDF) and by Gotenberg, as Rebar sends it (rebar-on-rails lib/gotenberg.rb). The
 // pages are rasterized (pdftoppm) and compared pixel by pixel (ImageMagick).

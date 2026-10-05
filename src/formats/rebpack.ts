@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 
-// .rebpack: a template with its images, to share it or move it into Rebar (plan D4). The same
+// .rebpack: a template with its images, to share it or move it into Rebar. The same
 // format Rebar reads and writes (rebar-on-rails app/operations/form_templates/rebpack.rb): a zip of
 // manifest.json, template.reb and assets/<file name>, with the same limits and image rules.
 

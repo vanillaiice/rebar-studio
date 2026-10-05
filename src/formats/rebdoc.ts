@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 
-// .rebdoc: one filled document, self-contained and re-renderable (plan D4): the exact template
+// .rebdoc: one filled document, self-contained and re-renderable: the exact template
 // version it was filled from, its answers, its files, the template's images and, for a final
 // document, its PDF.
 //

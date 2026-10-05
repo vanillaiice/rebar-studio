@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
 //
-// Tablets and phones (plan D2: the PWA serves them): a whole document filled on a touch screen.
+// Tablets and phones, which the PWA serves: a whole document filled on a touch screen.
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { sign, start } from './helpers';
