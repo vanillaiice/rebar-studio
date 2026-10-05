@@ -5,6 +5,7 @@
 // render with no filtered value.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { treeDiagram } from '../src/reference/diagram';
 import * as examples from '../src/reference/examples';
 import { testEngine } from './engine';
 
@@ -55,5 +56,25 @@ describe('AI guide', () => {
     await check(table);
     const signature = blocks.find((b) => b.includes('inspector_signature') && !b.includes('Concrete'))!;
     await check(signature);
+  });
+});
+
+describe('specification diagrams', () => {
+  const spec = readFileSync(new URL('../public/specification.md', import.meta.url), 'utf8');
+
+  it('draws every Mermaid block', () => {
+    const blocks = [...spec.matchAll(/```mermaid\n([\s\S]*?)```/g)].map((m) => m[1]);
+    expect(blocks.length).toBeGreaterThan(0);
+    for (const block of blocks) expect(treeDiagram(block)).not.toBeNull();
+  });
+
+  it('draws a tree with escaped labels and leaves other graphs alone', () => {
+    const html = treeDiagram('graph TD\n  A[Root &lt;x&gt;] --> B[One]\n  A --> C\n  B --> D[{{.Answers.*}}]')!;
+    expect(html).toBe(
+      '<div class="reb-tree"><ul><li><span class="reb-tree-node">Root &lt;x&gt;</span><ul><li><span class="reb-tree-node">One</span><ul><li><span class="reb-tree-node">{{.Answers.*}}</span></li></ul></li><li><span class="reb-tree-node">C</span></li></ul></li></ul></div>',
+    );
+    expect(treeDiagram('graph LR\n  A --> B')).toBeNull();
+    expect(treeDiagram('graph TD\n  A --> C\n  B --> C')).toBeNull();
+    expect(treeDiagram('sequenceDiagram\n  A->>B: hi')).toBeNull();
   });
 });

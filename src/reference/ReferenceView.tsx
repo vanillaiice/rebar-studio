@@ -6,10 +6,11 @@
 // (copied by scripts/build-wasm.sh) is folded away at the end.
 
 import { Bot, ChevronDown, Download, LayoutTemplate, Mail } from 'lucide-react';
-import { marked } from 'marked';
+import { Marked } from 'marked';
 import { useEffect, useState, type ReactNode } from 'react';
 import { navigate } from '../app/router';
 import { saveFile } from '../platform/bridge';
+import { treeDiagram } from './diagram';
 import { Example, Source } from './Example';
 import { ANYWHERE, FIELDS, HERO, LANDSCAPE, PAGES, PHOTOS, RULES, STARTING_ANSWERS, TABLES, VALUES } from './examples';
 import './reference.css';
@@ -76,6 +77,15 @@ const FIELD_TAGS: [string, string, string][] = [
   ['<reb-table>', 'Rows of answers', 'Your own table, one row per answer'],
 ];
 
+// Mermaid blocks Studio can draw become diagrams; the rest stay code.
+const spec = new Marked({
+  renderer: {
+    code({ text, lang }) {
+      return (lang === 'mermaid' && treeDiagram(text)) || false;
+    },
+  },
+});
+
 function FullSpecification() {
   const [open, setOpen] = useState(false);
   const [html, setHtml] = useState<string | null>(null);
@@ -87,7 +97,7 @@ function FullSpecification() {
         if (!r.ok) throw new Error(`The specification is missing (${r.status}).`);
         return r.text();
       })
-      .then((text) => setHtml(marked.parse(text, { async: false })))
+      .then((text) => setHtml(spec.parse(text, { async: false })))
       .catch((e) => setError(e instanceof Error ? e.message : String(e)));
   }, [open, html]);
   return (

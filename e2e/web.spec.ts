@@ -207,4 +207,5 @@ test('teaches with live examples and hands out the AI guide', async ({ page }) =
 
   await page.getByRole('button', { name: /The full specification/ }).click();
   await expect(page.getByRole('heading', { name: /Custom Form Elements/ })).toBeVisible();
+  await expect(page.locator('.reb-tree-node', { hasText: 'Rebar .reb File' })).toBeVisible();
 });
