@@ -1,0 +1,14 @@
+# Match STS landing: allow only public files and container configuration.
+*
+!Dockerfile
+!Caddyfile
+!index.html
+!fr.html
+!styles.css
+!theme.css
+!theme.js
+!main.js
+!robots.txt
+!sitemap.xml
+!assets/
+!assets/**

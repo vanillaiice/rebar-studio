@@ -1,0 +1,18 @@
+{
+	admin off
+}
+
+# The existing shared kamal-proxy owns the public hostname and HTTPS.
+# This port is internal to the container, exactly as in STS landing.
+:80 {
+	root * /usr/share/caddy
+	encode zstd gzip
+	respond /up "OK" 200
+	header {
+		Cache-Control "no-cache"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'"
+	}
+	file_server
+}

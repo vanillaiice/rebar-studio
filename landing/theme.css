@@ -1,0 +1,87 @@
+/* Shared light and dark themes for both language pages. */
+:root[data-theme="dark"] {
+  color-scheme:dark;
+  --paper:#020617;
+  --concrete:#0f172a;
+  --ink:#f1f5f9;
+  --muted:#a6b3c5;
+  --line:#334155;
+  --accent:#f5b700;
+  --surface:#0f172a;
+  --surface-subtle:#1e293b;
+  --surface-highlight:#172132;
+  --highlight-line:#6b531d;
+  --highlight-text:#facc15;
+  --top-surface:#0f172a;
+  --shadow:#02061738;
+  --drawing-grid:#ffffff08;
+  --drawing-line:#ffffff25;
+}
+@media(prefers-color-scheme:dark) {
+  :root:not([data-theme]) {
+    color-scheme:dark;
+    --paper:#020617;
+    --concrete:#0f172a;
+    --ink:#f1f5f9;
+    --muted:#a6b3c5;
+    --line:#334155;
+    --accent:#f5b700;
+    --surface:#0f172a;
+    --surface-subtle:#1e293b;
+    --surface-highlight:#172132;
+    --highlight-line:#6b531d;
+    --highlight-text:#facc15;
+    --top-surface:#0f172a;
+    --shadow:#02061738;
+    --drawing-grid:#ffffff08;
+    --drawing-line:#ffffff25;
+  }
+}
+
+.header-controls {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+}
+.language-link,.theme-toggle,.header-controls .menu-toggle {
+  width:44px;
+  height:44px;
+  padding:0;
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--ink);
+  align-items:center;
+  justify-content:center;
+}
+.language-link,.theme-toggle {
+  display:inline-flex;
+}
+.language-link {
+  font:12px var(--mono);
+  text-decoration:none;
+}
+.language-link:hover,.theme-toggle:hover {
+  background:var(--surface-subtle);
+}
+.theme-sun { display:none; }
+:root[data-theme="dark"] .theme-sun { display:block; }
+:root[data-theme="dark"] .theme-moon { display:none; }
+.navigation { margin-left:auto; gap:22px; }
+@media(max-width:1100px) {
+  .header { flex-wrap:wrap; gap:14px; padding-block:16px; }
+  .header-controls { margin-left:auto; }
+  .header-controls .menu-toggle:not([hidden]) { display:inline-flex; }
+  .navigation { order:3; width:100%; margin-left:0; flex-wrap:wrap; }
+  .js .navigation { display:none; }
+  .js .navigation[data-open="true"] { display:flex; }
+}
+@media(max-width:760px) {
+  .header { gap:10px; }
+  .header-controls { gap:4px; }
+  .brand { font-size:13px; }
+  .brand-divider { margin-inline:5px; }
+  .preview-caption { flex-wrap:wrap; }
+  .preview-tabs { gap:12px; }
+  .preview-tab { font-size:10px; }
+}

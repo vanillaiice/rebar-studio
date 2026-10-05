@@ -1,0 +1,28 @@
+# Same deployment pattern as ~/Projects/sts/landing.
+# bin/deploy runs Rebar Rails' bundled Kamal from landing/.
+service: rebar-studio-landing
+image: rebar-studio-landing
+
+servers:
+  - 62.169.20.136
+
+registry:
+  server: localhost:5555
+
+ssh:
+  user: vanillaiice
+
+proxy:
+  host: studio.rebarhq.app
+  ssl: true
+  app_port: 80
+  healthcheck:
+    path: /up
+
+builder:
+  arch: amd64
+  # STS also builds the current working tree from its landing directory.
+  context: .
+
+aliases:
+  logs: app logs -f

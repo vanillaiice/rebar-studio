@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Same launcher pattern as STS landing, using Rebar Rails' bundled Kamal.
+# landing/bin/deploy setup | landing/bin/deploy | landing/bin/deploy logs
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+[ $# -gt 0 ] || set -- deploy
+exec ../../app/rails/bin/kamal "$@"

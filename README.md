@@ -14,6 +14,7 @@ WebAssembly, so a template behaves and prints the same in Studio and in Rebar.
 
 - [User guide](docs/user-guide.md)
 - [Releasing](docs/releasing.md)
+- [Landing page and VPS deployment](landing/README.md)
 
 ## What is in it
 

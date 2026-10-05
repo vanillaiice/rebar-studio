@@ -58,6 +58,13 @@ Node, no `NODE_OPTIONS` or inspector flags, and the app loads only from its inte
 
 ## The web app
 
+The public landing page at **https://studio.rebarhq.app/** is a separate static Caddy service,
+deployed with the same Kamal pattern as STS landing on the shared VPS. It links to the existing
+browser app at **https://vanillaiice.github.io/rebar-studio/** and published desktop release assets.
+See [landing/README.md](../landing/README.md) for preview, release-link maintenance, and deployment:
+`landing/bin/deploy setup` initially, then `landing/bin/deploy` for updates. Landing updates do
+not rebuild the browser app or publish an Electron release.
+
 The **Pages** workflow builds `dist/` and deploys it to GitHub Pages; run it by hand once Pages is
 enabled for the repository (source: GitHub Actions). `dist/` is static, with no backend, so any static
 host serves it the same way (`base` is relative). The service worker precaches everything, the engine
