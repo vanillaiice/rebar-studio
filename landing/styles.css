@@ -18,8 +18,6 @@
   --highlight-text:#745200;
   --top-surface:#f5f6f7;
   --shadow:#0f172a12;
-  --drawing-grid:#0f172a0a;
-  --drawing-line:#0f172a25;
   --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",sans-serif;
   --mono:ui-monospace,SFMono-Regular,Consolas,monospace
 }
@@ -290,42 +288,6 @@ button:focus-visible,a:focus-visible,summary:focus-visible {
   writing-mode:vertical-rl;
   font:10px var(--mono);
   letter-spacing:.18em
-}
-.drawing-mark {
-  width:168px;
-  height:168px;
-  margin-bottom:48px;
-  position:relative;
-  background:repeating-linear-gradient(0deg,transparent 0 27px,var(--drawing-grid) 27px 28px),repeating-linear-gradient(90deg,transparent 0 27px,var(--drawing-grid) 27px 28px);
-  border:1px solid var(--drawing-line)
-}
-.drawing-mark:before,.drawing-mark:after {
-  content:"";
-  position:absolute;
-  background:var(--amber);
-  opacity:.65;
-  transform:rotate(-35deg);
-  width:10px;
-  height:116px;
-  top:26px;
-  left:54px
-}
-.drawing-mark:after {
-  left:97px
-}
-.drawing-mark span {
-  position:absolute;
-  height:1px;
-  background:var(--drawing-line);
-  width:24px;
-  left:-12px;
-  top:0
-}
-.drawing-mark span:last-child {
-  left:auto;
-  right:-12px;
-  top:auto;
-  bottom:0
 }
 .showcase {
   margin-bottom:36px;

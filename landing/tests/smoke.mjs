@@ -104,7 +104,7 @@ try {
   assert.equal(await page.locator('html').getAttribute('data-theme'), 'light');
   assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://studio.rebarhq.app/fr.html');
   await page.getByRole('button', { name: 'Documents', exact: true }).click();
-  assert.equal(await page.locator('#preview-caption').innerText(), 'Formulaire du document et totaux calculés.');
+  assert.equal(await page.locator('#preview-caption').innerText(), 'Remplissez un document et calculez les totaux à partir du même modèle.');
   await page.getByRole('button', { name: 'Activer le thème sombre' }).click();
   assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
   await page.getByRole('link', { name: 'English', exact: true }).click();

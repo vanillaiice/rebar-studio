@@ -12,6 +12,10 @@ The light and dark themes follow the device setting initially. The header toggle
 in browser storage and keeps it across reloads and language changes. If storage is unavailable,
 the toggle still works for the current page. The real product screenshots keep the app's own colors.
 
+The copy presents Studio as a free standalone template and document tool whose capabilities
+are included in Rebar. Paid template development by hblabs has a separate email subject;
+all contact links use `contact@hblabs.xyz`. Transfer to Rebar remains manual export/import.
+
 The visual foundation is Rebar's steel/amber palette, system typography, and hazard stripe.
 Product screenshots show the actual Studio app with fictional sample data. The document editor
 is a source editor with live preview; the page does not advertise visual drag-and-drop editing.
@@ -53,7 +57,7 @@ together when adopting a release. Do not use `/releases/latest` for beta downloa
 are directed to the web app because the current release workflow does not build macOS installers.
 
 `assets/editor.webp` and `assets/document.webp` were captured from the actual local Studio build.
-`assets/social.png` and `assets/social-fr.png` are the localized social previews;
+`assets/social.png` and `assets/social-fr.png` are the localized social previews of the updated hero;
 `assets/studio.svg` is the existing Studio logo.
 Refresh screenshots deliberately when product UI changes, using a disposable local workspace.
 

@@ -14,8 +14,6 @@
   --highlight-text:#facc15;
   --top-surface:#0f172a;
   --shadow:#02061738;
-  --drawing-grid:#ffffff08;
-  --drawing-line:#ffffff25;
 }
 @media(prefers-color-scheme:dark) {
   :root:not([data-theme]) {
@@ -33,8 +31,6 @@
     --highlight-text:#facc15;
     --top-surface:#0f172a;
     --shadow:#02061738;
-    --drawing-grid:#ffffff08;
-    --drawing-line:#ffffff25;
   }
 }
 
