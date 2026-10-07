@@ -213,8 +213,8 @@ export default function ReferenceView() {
             </p>
             {/* pdf-forms:boxes, pdf-forms:fields */}
             <p className="measure">
-              <code>fillable</code> on a text, number, date or text area field lets someone without Studio answer it in the PDF:
-              switch a document to <em>Fillable</em> and export it, and those fields become boxes to type into in any PDF reader
+              <code>fillable</code> on a text, number, date, text area or checkbox field lets someone without Studio answer it in the
+              PDF: switch a document to <em>Fillable</em> and export it, and those fields become boxes to type into (or tick) in any PDF reader
               (size them with <code>class</code>). <em>Import filled PDF</em> takes the typed answers back into the document.{' '}
               <code>{'{{if .Fillable}}'}</code> prints a part only in the PDF form.
             </p>

@@ -25,7 +25,7 @@ export const SNIPPETS: Snippet[] = [
   { group: 'Fields', label: 'Hidden field', snippet: '<reb-declare name="field_name" label="Field label" type="text"></reb-declare>{{.field_name}}', help: 'Declares a field without printing it where it is declared.' },
   { group: 'Fields', label: 'Required', snippet: ' required', help: 'Add inside a field tag: the field must be answered.' },
   // pdf-forms:boxes
-  { group: 'Fields', label: 'Fillable in the PDF', snippet: ' fillable', help: 'Add inside a text, number, date or text area tag: the PDF form leaves it as a box to type into.' },
+  { group: 'Fields', label: 'Fillable in the PDF', snippet: ' fillable', help: 'Add inside a text, number, date, text area or checkbox tag: the PDF form leaves it as a box to type into (or tick).' },
   { group: 'Fields', label: 'Show if', snippet: ' show-if="other_field == \'Yes\'"', help: 'Add inside a field tag: shown only while the condition holds.' },
   { group: 'Layout', label: 'Form section', snippet: '<reb-declare type="section" name="section_1" label="Section title"></reb-declare>', help: 'Groups the fields after it in the form; prints nothing.' },
   { group: 'Layout', label: 'Page break', snippet: '<reb-pagebreak></reb-pagebreak>' },

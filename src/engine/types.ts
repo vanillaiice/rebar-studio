@@ -52,7 +52,7 @@ export interface Field {
   step?: string;
   pattern?: string;
   showIf?: string;
-  fillable?: boolean; // pdf-forms:boxes: typed into a PDF text field when the document is rendered fillable (spec 4.5)
+  fillable?: boolean; // pdf-forms:boxes: typed (or ticked) into a PDF field when the document is rendered fillable (spec 4.5)
 }
 
 export interface Schema {

@@ -14,8 +14,8 @@ github.com/microcosm-cc/bluemonday v1.0.27 h1:MpEUotklkwCSLeH+Qdx1VJgNqLlpY2KXwX
 github.com/microcosm-cc/bluemonday v1.0.27/go.mod h1:jFi9vgW+H7c3V0lb6nR74Ib/DIB5OBs92Dimizgw2cA=
 github.com/pdfcpu/pdfcpu v0.16.1 h1:Sh6XZwaaCQaEN17eQItF0uQY8E4xFU+5BTHuDnhVTYI=
 github.com/pdfcpu/pdfcpu v0.16.1/go.mod h1:tnZgbllgsd8cGfbwRgOVUdlSS/mpsWjQMWSAI1vfltA=
-github.com/vanillaiice/reb v0.6.0 h1:t1HNeL+QFS4eWndST0Ss+IdouQNC25Ekms8FApPLGNU=
-github.com/vanillaiice/reb v0.6.0/go.mod h1:FRNxYCvqb659lnhjdNZwxU9Wr2XowaedFI/fBBhnFIc=
+github.com/vanillaiice/reb v0.7.0 h1:4YfI/0Q9U8FeOlNcB5ugmZhXxBaWQyMd5md96jpwMgY=
+github.com/vanillaiice/reb v0.7.0/go.mod h1:FRNxYCvqb659lnhjdNZwxU9Wr2XowaedFI/fBBhnFIc=
 go.yaml.in/yaml/v3 v3.0.5 h1:N6y/pJk8buWs9NY5ERU2HSMfm+IuD/OtfdAnq6kESPw=
 go.yaml.in/yaml/v3 v3.0.5/go.mod h1:HVTZu1O7/Vkt2N+BFy8Zza+lnLsABggaTM2ZpNIGuKg=
 golang.org/x/crypto v0.57.0 h1:3ZVCjf8Ggz7zneR/EHRVx68Ctf+2pmIMP2UFhh9cC6M=

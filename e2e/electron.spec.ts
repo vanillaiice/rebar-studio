@@ -165,6 +165,7 @@ test('exports a PDF form and takes the answers of a filled one back', async () =
     ['supplier', 'Gulf Steel'],
     ['quantity', ''],
     ['delivery', ''],
+    ['crane', 'Off'],
     ['remarks', ''],
     ['supplier', 'Gulf Steel'],
   ]);
@@ -174,11 +175,12 @@ test('exports a PDF form and takes the answers of a filled one back', async () =
   await page.getByRole('menuitem', { name: 'Import filled PDF…' }).click();
   await (await opening).setFiles(join(rebDir, 'internal/rebpdf/testdata/filled.pdf'));
   const confirm = page.getByRole('dialog', { name: 'Take the answers from the PDF?' });
-  await expect(confirm).toContainText('4 answers');
+  await expect(confirm).toContainText('5 answers');
   await confirm.getByRole('button', { name: 'Take the answers' }).click();
   await expect(page.getByLabel('Supplier')).toHaveValue('Qatar Steel – Ras Laffan');
   await expect(page.getByLabel('Quantity')).toHaveValue('40');
   await expect(page.getByLabel('Remarks')).toHaveValue('Gate 3 only.\nCall 30 min ahead.');
+  await expect(page.getByLabel('Crane needed')).toBeChecked();
   await expect(page.getByLabel('Priority')).toHaveValue('Urgent'); // not fillable: kept
   await page.getByRole('button', { name: 'Undo' }).click();
   await expect(page.getByLabel('Supplier')).toHaveValue('Gulf Steel');

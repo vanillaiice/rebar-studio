@@ -49,7 +49,7 @@ export async function htmlRendition(document: StudioDocument): Promise<Blob> {
 }
 
 // pdf-forms:boxes, pdf-forms:fields
-// fillablePdfOf is the document as a PDF form (desktop): its fillable fields as text fields,
+// fillablePdfOf is the document as a PDF form (desktop): its fillable fields as text fields and check boxes,
 // pre-filled with their answers, everything else printed with its answers. Without PDF_FORMS, the
 // fields stay empty boxes to fill in by hand.
 export async function fillablePdfOf(document: StudioDocument): Promise<Uint8Array> {
