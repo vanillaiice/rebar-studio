@@ -58,6 +58,15 @@ the first one that needs attention), renders the document, records its SHA-256 f
 locks it. A final document can be exported, duplicated, or **reopened as a revision**: a new draft
 with the same reference and the next revision number.
 
+**Fillable PDFs** let people without Studio answer part of a document. In the template, add
+`fillable` to text, number, date or text area fields. On such a document the desktop app shows a
+**With answers / Fillable** switch: in **Fillable**, the preview and **Export PDF form** leave those
+fields as boxes to type into in any PDF reader (pre-filled with any answers already given), while
+every other field prints its answer. When the PDF comes back filled, **Import filled PDF…** (in the
+document's menu, desktop or browser) shows what changes and takes the answers into the draft, where
+they can be edited (or undone) before finalizing. `{{if .Fillable}}` in a template prints a part only
+in the PDF form.
+
 When a template gets a new version, its drafts can **move to the latest version**; final documents
 keep theirs.
 

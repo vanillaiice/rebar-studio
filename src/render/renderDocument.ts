@@ -19,6 +19,7 @@ export interface Rendered {
   files: Map<string, Blob>; // by the names the page uses
   fontCss: string;
   errors: FieldError[]; // what prepare refused (the document still renders without those answers)
+  answers: Answers; // the answers as prepare returned them
 }
 
 export function systemValues(
@@ -68,6 +69,7 @@ export async function renderDocument(
   template: Template,
   settings: Settings,
   answers: Answers = document.answers,
+  fillable = false, // pdf-forms:boxes: fillable fields print as empty boxes, for a PDF form (reb spec 4.5)
 ): Promise<Rendered> {
   if (!version.compiled) throw new Error('the template version does not compile');
   const prepared = await engine.prepare(version.compiled.fields, answers);
@@ -97,8 +99,9 @@ export async function renderDocument(
     answers: prepared.answers,
     assets,
     fields: version.compiled.fields,
+    fillable,
   });
   if (!result.ok) throw new Error(result.error);
   const withFont = await withFonts(result.html, files);
-  return { html: result.html, files: withFont.files, fontCss: withFont.fontCss, errors: prepared.errors };
+  return { html: result.html, files: withFont.files, fontCss: withFont.fontCss, errors: prepared.errors, answers: prepared.answers };
 }

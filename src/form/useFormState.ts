@@ -16,7 +16,8 @@ export interface FormState {
   visible: Set<string>;
   errors: Map<string, FieldError>;
   setAnswer(key: string, value: unknown): void;
-  replace(answers: Answers): void;
+  replace(answers: Answers): void; // starts over: no undo past it
+  apply(answers: Answers): void; // one undoable change of several answers (pdf-forms:fields uses it)
   undo(): void;
   redo(): void;
   canUndo: boolean;
@@ -125,6 +126,16 @@ export function useFormState(schema: Schema, initial: Answers, onSave?: (answers
     [setAnswers, setHistory],
   );
 
+  const apply = useCallback(
+    (next: Answers) => {
+      setHistory({ past: [...history.current.past.slice(-UNDO_LIMIT + 1), latest.current], future: [] });
+      lastSnapshot.current = null;
+      setAnswers(next);
+      schedule();
+    },
+    [schedule, setAnswers, setHistory],
+  );
+
   const undo = useCallback(() => {
     const h = history.current;
     if (h.past.length === 0) return;
@@ -180,6 +191,7 @@ export function useFormState(schema: Schema, initial: Answers, onSave?: (answers
     errors,
     setAnswer,
     replace,
+    apply,
     undo,
     redo,
     canUndo: steps.past > 0,

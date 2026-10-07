@@ -12,6 +12,7 @@ import { getSettings } from '../store/settings';
 import { getTemplate, getVersion } from '../store/templates';
 import type { Settings, StudioDocument, Template, TemplateVersion } from '../store/types';
 import { assetIdOf } from '../store/types';
+import { PDF_FORMS } from '../documents/pdfForms'; // pdf-forms
 import { IS_DESKTOP, safeFileName } from '../platform/bridge';
 import { engineAssetUrl, pagedDocument } from './document';
 import { dataUrls, inlineFiles } from './files';
@@ -45,6 +46,17 @@ export async function htmlRendition(document: StudioDocument): Promise<Blob> {
     inline: { tailwind: await text(engineAssetUrl('tailwindcss.js')), paged: await text(engineAssetUrl('paged.polyfill.js')) },
   });
   return new Blob([inlineFiles(page, await dataUrls(rendered.files))], { type: 'text/html' });
+}
+
+// pdf-forms:boxes, pdf-forms:fields
+// fillablePdfOf is the document as a PDF form (desktop): its fillable fields as text fields,
+// pre-filled with their answers, everything else printed with its answers. Without PDF_FORMS, the
+// fields stay empty boxes to fill in by hand.
+export async function fillablePdfOf(document: StudioDocument): Promise<Uint8Array> {
+  const { version, template, settings } = await context(document);
+  const rendered = await renderDocument(document, version, template, settings, document.answers, true);
+  const printed = await renderPdf(rendered.html, rendered.files, rendered.fontCss);
+  return PDF_FORMS ? engine.fillable(printed, rendered.answers) : printed;
 }
 
 export async function pdfOf(document: StudioDocument): Promise<Uint8Array> {

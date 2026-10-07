@@ -75,7 +75,7 @@ included, so the app works offline after its first load and asks before reloadin
 Studio pins a `reb` release in `go.mod`. To take a new one:
 
 ```bash
-GOOS=js GOARCH=wasm go get -tool github.com/vanillaiice/reb/cmd/wasm@vX.Y.Z
+GOOS=js GOARCH=wasm go get -tool github.com/vanillaiice/reb/cmd/wasm@vX.Y.Z github.com/vanillaiice/reb/cmd/wasmpdf@vX.Y.Z
 GOOS=js GOARCH=wasm go mod tidy
 npm test && npm run test:fidelity
 ```

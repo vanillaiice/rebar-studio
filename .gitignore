@@ -17,6 +17,7 @@ release/
 
 # Generated assets (built from the reb engine via `npm run build:wasm`)
 public/rebcompiler.wasm
+public/rebpdf.wasm
 public/wasm_exec.js
 public/tailwindcss.js
 public/paged.polyfill.js

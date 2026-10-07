@@ -52,6 +52,7 @@ function placeDiagnostic(code: string, params: Record<string, string> | undefine
     case 'show_if_unknown_field':
     case 'unused_field':
     case 'duplicate_field':
+    case 'fillable_ignored': // pdf-forms:boxes
       return field ? fieldTag(field) : null;
     case 'unknown_binding':
       return params?.name ? new RegExp(`\\{\\{[^}]*\\.${escapeRegExp(params.name)}\\b[^}]*\\}\\}`) : null;

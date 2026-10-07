@@ -44,11 +44,13 @@ npm run test:fidelity  # the desktop PDF against Gotenberg (GOTENBERG_URL, defau
 ```
 
 `npm run dev` and `npm run build` first run `build:wasm` (`scripts/build-wasm.sh`), which builds the
-engine release pinned in `go.mod` to `public/rebcompiler.wasm` and copies what the engine ships for
+engine release pinned in `go.mod` to `public/rebcompiler.wasm` (and its PDF form build, reb v0.6.0 and
+later, to `public/rebpdf.wasm`, which the engine worker loads on the first fillable PDF) and copies what the engine ships for
 browsers (`wasm_exec.js`, `tailwindcss.js`, `paged.polyfill.js`, `specification.md`). These files
 are generated, not committed.
 
-- Move to a new engine release: `go get -tool github.com/vanillaiice/reb/cmd/wasm@vX.Y.Z`.
+- Move to a new engine release: `go get -tool github.com/vanillaiice/reb/cmd/wasm@vX.Y.Z github.com/vanillaiice/reb/cmd/wasmpdf@vX.Y.Z`
+  (`docs/releasing.md`).
 - Build against a local `reb` checkout while changing the engine: `REB_DIR=../compiler npm run dev`.
 
 Playwright drives its own Chromium by default (`npx playwright install chromium`); set

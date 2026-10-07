@@ -3,10 +3,12 @@
 
 // Filling one document: the form, the live PDF beside it, and the document's life: finalize (check
 // with the engine, render, keep the PDF and its SHA-256, lock), duplicate, reopen as a revision.
+// A template with fillable fields (reb spec 4.5) also goes out as a PDF form, for people without
+// Studio to fill in, and takes the filled PDF's answers back.
 
 import { clsx } from 'clsx';
 import {
-  ArrowLeft, ArrowUpCircle, Check, Copy, Eye, EyeOff, FileDown, Loader2, Lock, MoreVertical, Package, Printer, Redo2, RotateCcw,
+  ArrowLeft, ArrowUpCircle, Check, Copy, Eye, EyeOff, FileDown, FileUp, Loader2, Lock, MoreVertical, Package, Printer, Redo2, RotateCcw,
   ShieldCheck, Trash2, Undo2,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -23,8 +25,8 @@ import { useDocumentFiles } from '../form/fileSupport';
 import { firstErrorKey } from '../form/fields';
 import { FormView } from '../form/FormView';
 import { useFormState } from '../form/useFormState';
-import { IS_DESKTOP, saveFile } from '../platform/bridge';
-import { fileName, finalRendition, pdfOf } from '../render/exports';
+import { IS_DESKTOP, openFiles, saveFile } from '../platform/bridge';
+import { fileName, fillablePdfOf, finalRendition, pdfOf } from '../render/exports';
 import { Preview, type PreviewHandle, type PreviewState } from '../render/Preview';
 import { renderDocument } from '../render/renderDocument';
 import { assetIdsIn } from '../store/answers';
@@ -36,6 +38,7 @@ import {
 import { getTemplate, getVersion } from '../store/templates';
 import type { StudioDocument, Template, TemplateVersion } from '../store/types';
 import { StatusBadge } from './DocumentsView';
+import { importedChanges, PDF_FORMS, withImported } from './pdfForms'; // pdf-forms
 
 interface Loaded {
   document: StudioDocument;
@@ -123,6 +126,7 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
   const [confirm, confirmDialog] = useConfirm();
   const final = document.status === 'final';
   const fields = version.compiled!.fields;
+  const hasFillable = fields.fields.some((f) => f.fillable); // pdf-forms:boxes
 
   const save = useCallback(
     async (answers: Answers) => {
@@ -140,6 +144,9 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
   const [rendered, setRendered] = useState<{ html: string; files: Map<string, Blob>; fontCss: string }>({ html: '', files: new Map(), fontCss: '' });
   const [busy, setBusy] = useState<string | null>(null);
   const [details, setDetails] = useState(false);
+  // pdf-forms:boxes. The PDF switch: with the answers printed, or as a PDF form whose fillable fields are left to fill.
+  const [fillable, setFillable] = useState(false);
+  const asForm = fillable && hasFillable && IS_DESKTOP;
   const previewRef = useRef<PreviewHandle>(null);
 
   // The live PDF follows the answers (debounced; the preview debounces its own rendering too).
@@ -148,7 +155,7 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
     let cancelled = false;
     const timer = setTimeout(async () => {
       try {
-        const out = await renderDocument(document, version, template, settings, state.answers);
+        const out = await renderDocument(document, version, template, settings, state.answers, asForm);
         if (!cancelled) setRendered({ html: out.html, files: out.files, fontCss: out.fontCss });
       } catch (e) {
         if (!cancelled) setPreviewState({ rendering: false, pages: 0, error: errorMessage(e) });
@@ -160,7 +167,7 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
     };
     // document changes on every save; the render depends on its details, not its answers field
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.answers, livePdf, final, version, template, settings, document.title, document.project, document.reference]);
+  }, [state.answers, livePdf, final, asForm, version, template, settings, document.title, document.project, document.reference]);
 
   // Undo and redo outside text inputs (inputs keep their own).
   useEffect(() => {
@@ -221,16 +228,57 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
     });
 
   const exportPdf = () =>
-    run('Rendering the PDF…', async () => {
+    run(asForm && !final ? 'Making the PDF form…' : 'Rendering the PDF…', async () => {
       await state.flush();
       const current = (await getDocument(document.id))!;
+      const form = asForm && !final;
       await saveFile({
-        name: fileName(settings.fileNamePattern, current, template, 'pdf'),
-        bytes: await pdfOf(current),
+        name: fileName(settings.fileNamePattern, current, template, form ? 'form.pdf' : 'pdf'),
+        bytes: form ? await fillablePdfOf(current) : await pdfOf(current),
         type: 'application/pdf',
         filters: [{ name: 'PDF document', extensions: ['pdf'] }],
       });
     });
+
+  // pdf-forms:fields
+  const importFilledPdf = async () => {
+    const [file] = await openFiles('.pdf,application/pdf');
+    if (!file) return;
+    await run('Reading the PDF…', async () => {
+      const imported = await engine.pdfAnswers(new Uint8Array(await file.arrayBuffer()), fields);
+      const changes = importedChanges(fields.fields, state.answers, imported);
+      if (Object.keys(imported).length === 0) {
+        toast(`${file.name} has none of this template's fillable fields.`, 'error');
+        return;
+      }
+      if (changes.length === 0) {
+        toast('The PDF holds the answers the document already has.', 'success');
+        return;
+      }
+      const ok = await confirm({
+        title: 'Take the answers from the PDF?',
+        message: (
+          <>
+            <p>{changes.length} answer{changes.length === 1 ? '' : 's'} from {file.name} will replace what the document has. You can still edit them, or undo.</p>
+            <ul className="mt-3 flex flex-col gap-2">
+              {changes.map((change) => (
+                <li key={change.key} className="rounded-md bg-white/5 px-3 py-2">
+                  <p className="text-xs font-semibold text-slate-300">{change.label}</p>
+                  <p className="whitespace-pre-wrap break-words text-xs text-slate-500 line-through">{change.before || '(empty)'}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm text-white">{change.after || '(empty)'}</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        ),
+        action: 'Take the answers',
+      });
+      if (!ok) return;
+      state.apply(withImported(state.answers, changes));
+      setFillable(false);
+      toast(`${changes.length} answer${changes.length === 1 ? '' : 's'} taken from the PDF`, 'success');
+    });
+  };
 
   const exportRebdoc = () =>
     run('Exporting…', async () => {
@@ -288,8 +336,26 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
               </Button>
             </>
           )}
+          {/* pdf-forms:boxes */}
+          {IS_DESKTOP && hasFillable && !final && (
+            <div role="radiogroup" aria-label="PDF" className="flex rounded-md border border-white/10 p-0.5 text-xs">
+              {([[false, 'With answers'], [true, 'Fillable']] as const).map(([value, label]) => (
+                <button
+                  key={label}
+                  type="button"
+                  role="radio"
+                  aria-checked={fillable === value}
+                  title={value ? 'The PDF leaves the fillable fields as boxes to type into' : 'The PDF prints every answer'}
+                  onClick={() => setFillable(value)}
+                  className={clsx('rounded px-2.5 py-1', fillable === value ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white')}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
           {IS_DESKTOP ? (
-            <Button size="sm" icon={<FileDown size={16} />} onClick={exportPdf}>Export PDF</Button>
+            <Button size="sm" icon={<FileDown size={16} />} onClick={exportPdf}>{asForm && !final ? 'Export PDF form' : 'Export PDF'}</Button>
           ) : (
             !final && livePdf && <Button size="sm" icon={<Printer size={16} />} onClick={() => previewRef.current?.print()}>Print</Button>
           )}
@@ -304,6 +370,8 @@ function DocumentFiller({ document: initial, version, template, latest, reload }
             label="More actions"
             icon={<MoreVertical size={18} />}
             items={[
+              // pdf-forms:fields: the import item
+              ...(PDF_FORMS && hasFillable && !final ? [{ label: 'Import filled PDF…', icon: <FileUp size={17} />, run: () => void importFilledPdf() }] : []),
               { label: 'Export .rebdoc', icon: <Package size={17} />, run: exportRebdoc },
               { label: 'Duplicate', icon: <Copy size={17} />, run: () => run('Duplicating…', async () => { await state.flush(); navigate({ name: 'document', id: (await duplicateDocument(document.id)).id }); }) },
               { label: 'History', icon: <ShieldCheck size={17} />, run: () => setDetails(true) },

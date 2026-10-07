@@ -11,7 +11,7 @@ import type {
   RenderResult,
   Schema,
 } from './types';
-import type { EngineMethod, WorkerRequest, WorkerResponse } from './worker';
+import type { EngineMethod, PdfMethod, WorkerRequest, WorkerResponse } from './worker';
 
 type Pending = { resolve(value: unknown): void; reject(error: Error): void };
 
@@ -51,6 +51,7 @@ class EngineClient {
           type: 'init',
           wasmExecUrl: new URL('wasm_exec.js', document.baseURI).href,
           wasmUrl: new URL('rebcompiler.wasm', document.baseURI).href,
+          pdfWasmUrl: new URL('rebpdf.wasm', document.baseURI).href, // pdf-forms:fields
         };
         worker.postMessage(init);
       });
@@ -58,7 +59,7 @@ class EngineClient {
     return this.readyPromise;
   }
 
-  private async call<T>(method: EngineMethod, ...args: unknown[]): Promise<T> {
+  private async call<T>(method: EngineMethod | PdfMethod, ...args: unknown[]): Promise<T> {
     await this.ready();
     const id = this.nextId++;
     return new Promise<T>((resolve, reject) => {
@@ -78,6 +79,17 @@ class EngineClient {
 
   render(input: RenderInput): Promise<RenderResult> {
     return this.call('render', input);
+  }
+
+  // pdf-forms:fields
+  // fillable turns a PDF printed from a page rendered fillable into a PDF form (reb spec 4.5).
+  fillable(pdf: Uint8Array, answers: Answers): Promise<Uint8Array> {
+    return this.call('fillable', pdf, answers);
+  }
+
+  // pdfAnswers reads the template's fillable fields back from a filled PDF form.
+  pdfAnswers(pdf: Uint8Array, fields: Schema): Promise<Answers> {
+    return this.call('pdfAnswers', pdf, fields);
   }
 }
 

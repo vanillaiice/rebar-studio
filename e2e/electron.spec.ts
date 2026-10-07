@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 hblabs
+import { execFileSync } from 'node:child_process';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -137,4 +138,48 @@ test('updates the PDF preview in place, keeping the reader where they were', asy
   await expect.poll(() => pages.evaluate((el) => !(el.querySelector('canvas') as { old?: boolean }).old), { timeout: 30_000 }).toBe(true);
   expect(await pages.evaluate((el) => el.scrollTop)).toBe(before);
   await expect(pages.locator('canvas')).toHaveCount(3);
+});
+
+// pdf-forms:boxes, pdf-forms:fields
+test('exports a PDF form and takes the answers of a filled one back', async () => {
+  const rebDir = process.env.REB_DIR ?? execFileSync('go', ['list', '-m', '-f', '{{.Dir}}', 'github.com/vanillaiice/reb'], { encoding: 'utf8' }).trim();
+  const choosing = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Import' }).click();
+  await (await choosing).setFiles(join(rebDir, 'testdata/golden/fillable.reb'));
+  await page.getByRole('listitem').filter({ has: page.getByRole('heading', { name: 'fillable' }) }).getByRole('button', { name: 'Fill', exact: true }).click();
+  await page.getByLabel('Supplier').fill('Gulf Steel');
+  await page.getByLabel('Priority').selectOption('Urgent');
+
+  await page.getByRole('radio', { name: 'Fillable' }).click();
+  const target = join(profile, 'form.pdf');
+  await app.evaluate(({ dialog }, path) => {
+    dialog.showSaveDialog = (async () => ({ canceled: false, filePath: path })) as never;
+  }, target);
+  await page.getByRole('button', { name: 'Export PDF form' }).click();
+  await expect.poll(async () => (await readFile(target).catch(() => Buffer.alloc(0))).subarray(0, 5).toString(), { timeout: 60_000 }).toBe('%PDF-');
+
+  const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const pdf = await getDocument({ data: new Uint8Array(await readFile(target)) }).promise;
+  const widgets = (await (await pdf.getPage(1)).getAnnotations()).filter((a) => a.subtype === 'Widget');
+  expect(widgets.map((w) => [w.fieldName, w.fieldValue])).toEqual([
+    ['supplier', 'Gulf Steel'],
+    ['quantity', ''],
+    ['delivery', ''],
+    ['remarks', ''],
+    ['supplier', 'Gulf Steel'],
+  ]);
+
+  const opening = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'More actions' }).click();
+  await page.getByRole('menuitem', { name: 'Import filled PDF…' }).click();
+  await (await opening).setFiles(join(rebDir, 'internal/rebpdf/testdata/filled.pdf'));
+  const confirm = page.getByRole('dialog', { name: 'Take the answers from the PDF?' });
+  await expect(confirm).toContainText('4 answers');
+  await confirm.getByRole('button', { name: 'Take the answers' }).click();
+  await expect(page.getByLabel('Supplier')).toHaveValue('Qatar Steel – Ras Laffan');
+  await expect(page.getByLabel('Quantity')).toHaveValue('40');
+  await expect(page.getByLabel('Remarks')).toHaveValue('Gate 3 only.\nCall 30 min ahead.');
+  await expect(page.getByLabel('Priority')).toHaveValue('Urgent'); // not fillable: kept
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByLabel('Supplier')).toHaveValue('Gulf Steel');
 });
