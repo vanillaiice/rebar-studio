@@ -5,16 +5,99 @@
 // Formula and row-number cells are read-only and show what the engine computed. Enter moves to the
 // same cell of the next row (adding one at the end); Tab moves along the row.
 
-import { ArrowDown, ArrowUp, Copy, ImagePlus, PenLine, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Copy, ImagePlus, Loader2, PenLine, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Column, Field } from '../engine/types';
-import { inputClass } from '../components/format';
+import { errorMessage, inputClass } from '../components/format';
+import { useToast } from '../components/toast';
 import type { FileSupport } from './fileSupport';
-import { prepareImage } from './images';
+import { isImage, prepareImage } from './images';
+import { useImageDrop } from './useImageDrop';
 import type { PhotoOptions } from './ImagesField';
 import { SignaturePad } from './SignaturePad';
 
 type Row = Record<string, unknown>;
+
+function TablePhotoCell({ id, label, value, files, photo, readOnly, onChange }: {
+  id: string;
+  label: string;
+  value: unknown;
+  files: FileSupport;
+  photo: PhotoOptions;
+  readOnly?: boolean;
+  onChange(ref: string): void;
+}) {
+  const url = files.url(value);
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const adding = useRef(false);
+  const add = async (incoming: File[]) => {
+    if (readOnly || adding.current || !incoming.length) return;
+    if (incoming.length !== 1 || !isImage(incoming[0])) {
+      toast('Drop one image into a photo cell.', 'error');
+      return;
+    }
+    adding.current = true;
+    setBusy(true);
+    try {
+      const file = incoming[0];
+      const prepared = await prepareImage(file, photo);
+      onChange(await files.add(prepared.blob, 'photo', { name: file.name, width: prepared.width, height: prepared.height }));
+    } catch (e) {
+      toast(errorMessage(e), 'error');
+    } finally {
+      adding.current = false;
+      setBusy(false);
+    }
+  };
+  const drop = useImageDrop((incoming) => void add(incoming), readOnly || busy);
+  const pick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => void add(Array.from(input.files ?? []));
+    input.click();
+  };
+  return (
+    <div
+      aria-label={`${label} photo cell`}
+      onDragOver={drop.onDragOver}
+      onDragLeave={drop.onDragLeave}
+      onDrop={drop.onDrop}
+      className={`relative flex w-fit items-center rounded-md ${drop.over ? 'bg-brand-amber/10 ring-2 ring-brand-amber' : ''}`}
+    >
+      {readOnly ? (
+        url && <img src={url} alt={label} className="h-12 w-16 rounded object-cover" />
+      ) : (
+        <>
+          <button
+            type="button"
+            data-cell={id}
+            aria-label={url ? `Replace ${label}` : `Add ${label}`}
+            title={`${url ? 'Replace' : 'Add'} ${label}, or drop one image here`}
+            disabled={busy}
+            onClick={pick}
+            className={`flex items-center justify-center rounded-md text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-brand-amber disabled:opacity-50 ${url ? 'overflow-hidden hover:opacity-80' : 'bg-brand-steel-light p-2 hover:bg-slate-700'}`}
+          >
+            {busy ? <Loader2 size={18} className="animate-spin" /> : url ? <img src={url} alt={label} className="h-12 w-16 rounded object-cover" /> : <ImagePlus size={18} />}
+          </button>
+          {url && (
+            <button
+              type="button"
+              aria-label={`Remove ${label}`}
+              title={`Remove ${label}`}
+              disabled={busy}
+              onClick={() => onChange('')}
+              className="absolute right-0 top-0 rounded bg-black/70 p-1 text-red-200 hover:bg-red-950 hover:text-white focus-visible:outline-2 focus-visible:outline-brand-amber disabled:opacity-50"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
 
 function emptyRow(columns: Column[]): Row {
   return Object.fromEntries(columns.map((c) => [c.key, c.kind === 'checkbox' ? false : '']));
@@ -54,7 +137,9 @@ export function TableField({
     current.current = rows;
   }, [rows]);
   const setCell = (index: number, key: string, cell: unknown) => {
-    onChange(current.current.map((row, i) => (i === index ? { ...row, [key]: cell } : row)));
+    const next = current.current.map((row, i) => (i === index ? { ...row, [key]: cell } : row));
+    current.current = next;
+    onChange(next);
   };
   const addRow = () => onChange([...rows, emptyRow(columns)]);
   const removeRow = (index: number) => onChange(rows.filter((_, i) => i !== index));
@@ -77,19 +162,6 @@ export function TableField({
     event.preventDefault();
     if (index === rows.length - 1) addRow();
     focusCell(index + 1, column);
-  };
-
-  const pickImage = (index: number, key: string) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const prepared = await prepareImage(file, photo);
-      setCell(index, key, await files.add(prepared.blob, 'photo', { name: file.name, width: prepared.width, height: prepared.height }));
-    };
-    input.click();
   };
 
   // Computed columns (amounts) get a total; a typed number may be a rate or a size, which adds up to nothing.
@@ -137,21 +209,24 @@ export function TableField({
         </select>
       );
     }
-    if (column.kind === 'image' || column.kind === 'signature') {
+    if (column.kind === 'image') {
+      return <TablePhotoCell id={id} label={column.label} value={row[column.key]} files={files} photo={photo} readOnly={readOnly} onChange={(ref) => setCell(index, column.key, ref)} />;
+    }
+    if (column.kind === 'signature') {
       const url = files.url(row[column.key]);
       return (
         <div className="flex items-center gap-2">
-          {readOnly && url && <img src={url} alt={column.label} className={`h-12 rounded ${column.kind === 'signature' ? 'bg-white px-1' : 'w-16 object-cover'}`} />}
+          {readOnly && url && <img src={url} alt={column.label} className="h-12 rounded bg-white px-1" />}
           {!readOnly && (
             <button
               type="button"
               data-cell={id}
               aria-label={url ? `Replace ${column.label}` : `Add ${column.label}`}
-              onClick={() => (column.kind === 'image' ? pickImage(index, column.key) : setSigning({ row: index, column: column.key }))}
+              onClick={() => setSigning({ row: index, column: column.key })}
               title={url ? `Replace ${column.label}` : `Add ${column.label}`}
               className={`rounded-md text-slate-200 outline-none focus-visible:ring-2 focus-visible:ring-brand-amber ${url ? 'overflow-hidden hover:opacity-80' : 'bg-brand-steel-light p-2 hover:bg-slate-700'}`}
             >
-              {url ? <img src={url} alt={column.label} className={`h-12 rounded ${column.kind === 'signature' ? 'bg-white px-1' : 'w-16 object-cover'}`} /> : column.kind === 'image' ? <ImagePlus size={18} /> : <PenLine size={18} />}
+              {url ? <img src={url} alt={column.label} className="h-12 rounded bg-white px-1" /> : <PenLine size={18} />}
             </button>
           )}
         </div>

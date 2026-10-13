@@ -26,6 +26,7 @@ import { buildRebpack } from '../formats/rebpack';
 import { useMemoryFiles } from '../form/fileSupport';
 import { FormView } from '../form/FormView';
 import { useFormState } from '../form/useFormState';
+import { useImageDrop } from '../form/useImageDrop';
 import { IS_DESKTOP, safeFileName, saveFile } from '../platform/bridge';
 import { Preview, type PreviewHandle, type PreviewState } from '../render/Preview';
 import { templateFiles, withFonts } from '../render/renderDocument';
@@ -38,6 +39,7 @@ import { markersFor } from './diagnostics';
 import { registerCompletions, setMarkers } from './monaco';
 import { SNIPPETS } from './snippets';
 import { VersionsDialog } from './VersionsDialog';
+import { addTemplateImages, canInsertTemplateImage, templateImageTag } from './templateImages';
 
 type Tab = 'reb' | 'html' | 'fields' | 'form';
 
@@ -108,6 +110,8 @@ export default function EditorView({ templateId }: { templateId: string }) {
   const [assetFiles, setAssetFiles] = useState<Map<string, Blob>>(new Map());
   const [rendered, setRendered] = useState<{ html: string; files: Map<string, Blob>; fontCss: string }>({ html: '', files: new Map(), fontCss: '' });
   const [showProblems, setShowProblems] = useState(true);
+  const [addingImages, setAddingImages] = useState(false);
+  const imageImport = useRef(false);
 
   const panes = useRef<HTMLDivElement>(null);
   const editor = useRef<MonacoApi.editor.IStandaloneCodeEditor | null>(null);
@@ -228,6 +232,50 @@ export default function EditorView({ templateId }: { templateId: string }) {
     instance.focus();
   };
 
+  const sourceDrop = useImageDrop((incoming, event) => {
+    const instance = editor.current;
+    const model = instance?.getModel();
+    const monaco = monacoRef.current;
+    if (!instance || !model || !monaco || imageImport.current || !incoming.length) return;
+    const position = instance.getTargetAtClientPoint(event.clientX, event.clientY)?.position ?? instance.getPosition();
+    if (!position) return;
+    const before = model.getValue().slice(0, model.getOffsetAt(position));
+    if (!canInsertTemplateImage(before)) {
+      toast('Drop images between HTML tags, outside styles and template expressions.', 'error');
+      return;
+    }
+    // Track the insertion point while images are read, so typing cannot shift the drop into another tag.
+    const [anchor] = model.deltaDecorations([], [{
+      range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+      options: { stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges },
+    }]);
+    imageImport.current = true;
+    setAddingImages(true);
+    void (async () => {
+      try {
+        const added = await addTemplateImages(templateId, incoming, (message) => toast(message, 'error'));
+        setVersion(added.version);
+        if (model.isDisposed() || instance.getModel() !== model) return;
+        const range = model.getDecorationRange(anchor);
+        if (!range || !added.names.length) return;
+        if (!canInsertTemplateImage(model.getValue().slice(0, model.getOffsetAt(range.getStartPosition())))) {
+          toast('Images saved in Template images. The source changed at the drop position; insert their tags between HTML tags.', 'info');
+          return;
+        }
+        instance.pushUndoStop();
+        instance.executeEdits('drop-images', [{ range, text: added.names.map(templateImageTag).join('\n') + '\n', forceMoveMarkers: true }]);
+        instance.pushUndoStop();
+        instance.focus();
+      } catch (e) {
+        toast(errorMessage(e), 'error');
+      } finally {
+        if (!model.isDisposed()) model.deltaDecorations([anchor], []);
+        imageImport.current = false;
+        setAddingImages(false);
+      }
+    })();
+  }, addingImages || tab !== 'reb');
+
   const reveal = (line: number, column: number) => {
     setTab('reb');
     requestAnimationFrame(() => {
@@ -312,11 +360,20 @@ export default function EditorView({ templateId }: { templateId: string }) {
         <TabButton active={tab === 'html'} onClick={() => setTab('html')} icon={<Code2 size={16} />}>Compiled</TabButton>
         <TabButton active={tab === 'fields'} onClick={() => setTab('fields')} icon={<Database size={16} />}>Schema</TabButton>
       </div>
-      <div className="relative min-h-0 flex-1">
+      <div
+        aria-label={tab === 'reb' ? 'Template source editor' : undefined}
+        onDragOverCapture={tab === 'reb' ? sourceDrop.onDragOver : undefined}
+        onDragLeaveCapture={tab === 'reb' ? sourceDrop.onDragLeave : undefined}
+        onDropCapture={tab === 'reb' ? sourceDrop.onDrop : undefined}
+        className={`relative min-h-0 flex-1 ${sourceDrop.over && tab === 'reb' ? 'ring-2 ring-inset ring-brand-amber' : ''}`}
+      >
         {tab === 'reb' && <Editor height="100%" defaultLanguage="html" theme="vs-dark" value={source} onChange={(v) => edit(v ?? '')} onMount={onMount} options={editorOptions} />}
         {tab === 'html' && <Editor height="100%" defaultLanguage="html" theme="vs-dark" value={lastGood?.htmlSource ?? ''} options={{ ...editorOptions, readOnly: true }} />}
         {tab === 'fields' && <Editor height="100%" defaultLanguage="json" theme="vs-dark" value={JSON.stringify(lastGood?.fields ?? {}, null, 2)} options={{ ...editorOptions, readOnly: true, wordWrap: 'off' }} />}
         {tab === 'form' && (lastGood ? <FormPreview schema={lastGood.fields} files={formFiles} /> : <p className="p-6 text-sm text-slate-400">Fix the template to see its form.</p>)}
+        {tab === 'reb' && <div className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 py-1 text-center text-xs ${sourceDrop.over ? 'bg-brand-amber text-brand-steel' : 'bg-[#1e1e1e]/90 text-zinc-400'}`}>
+          {addingImages ? 'Adding images…' : sourceDrop.over ? 'Drop to save images and insert image tags here' : 'Drop PNG, JPEG or WebP images between tags to add them to the template'}
+        </div>}
       </div>
       {markers.length > 0 && (
         <div className="shrink-0 border-t border-brand-steel-light bg-brand-steel">
