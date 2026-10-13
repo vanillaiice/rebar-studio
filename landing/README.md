@@ -51,7 +51,7 @@ JavaScript-disabled launch/download links. They do not download installers or mo
 ## Content and releases
 
 `index.html` and `fr.html` contain all public links and release information, including no-JavaScript
-fallbacks. Current downloads point to the verified **v1.0.0-beta.3** GitHub prerelease assets for
+fallbacks. Current downloads point to the verified **v1.0.0-beta.6** GitHub prerelease assets for
 Windows x64 and Linux x64. Update the version label, release-notes link, and all four asset links
 together when adopting a release. Do not use `/releases/latest` for beta downloads. macOS visitors
 are directed to the web app because the current release workflow does not build macOS installers.
