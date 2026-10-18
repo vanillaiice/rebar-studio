@@ -2,6 +2,8 @@
 // Copyright (C) 2026 hblabs
 
 // The app's handle on the engine worker: typed, promise-based calls. One worker serves the whole app.
+// A call that runs longer than CALL_TIMEOUT (a template looping without end) terminates the worker:
+// its calls fail with EngineTimeout and the next call starts a fresh one, so the app stays responsive.
 
 import type {
   Answers,
@@ -13,7 +15,17 @@ import type {
 } from './types';
 import type { EngineMethod, PdfMethod, WorkerRequest, WorkerResponse } from './worker';
 
-type Pending = { resolve(value: unknown): void; reject(error: Error): void };
+type Pending = { resolve(value: unknown): void; reject(error: Error): void; timer: ReturnType<typeof setTimeout> };
+
+// The same budget Rebar gives rebc on the server (lib/reb.rb).
+export const CALL_TIMEOUT = 10_000;
+
+export class EngineTimeout extends Error {
+  constructor(method: string) {
+    super(`the engine took longer than ${CALL_TIMEOUT / 1000} s to ${method} and was stopped`);
+    this.name = 'EngineTimeout';
+  }
+}
 
 class EngineClient {
   private worker: Worker | null = null;
@@ -37,12 +49,10 @@ class EngineClient {
               reject(new Error(message.error));
               break;
             case 'result':
-              this.pending.get(message.id)?.resolve(message.value);
-              this.pending.delete(message.id);
+              this.settle(message.id)?.resolve(message.value);
               break;
             case 'error':
-              this.pending.get(message.id)?.reject(new Error(message.error));
-              this.pending.delete(message.id);
+              this.settle(message.id)?.reject(new Error(message.error));
               break;
           }
         };
@@ -59,11 +69,28 @@ class EngineClient {
     return this.readyPromise;
   }
 
+  private settle(id: number): Pending | undefined {
+    const pending = this.pending.get(id);
+    if (pending) clearTimeout(pending.timer);
+    this.pending.delete(id);
+    return pending;
+  }
+
+  // restart stops a worker stuck in a call: every call in flight fails, the next starts a new worker.
+  private restart(method: string) {
+    this.worker?.terminate();
+    this.worker = null;
+    this.readyPromise = null;
+    const error = new EngineTimeout(method);
+    for (const id of [...this.pending.keys()]) this.settle(id)?.reject(error);
+  }
+
   private async call<T>(method: EngineMethod | PdfMethod, ...args: unknown[]): Promise<T> {
     await this.ready();
     const id = this.nextId++;
     return new Promise<T>((resolve, reject) => {
-      this.pending.set(id, { resolve: resolve as (value: unknown) => void, reject });
+      const timer = setTimeout(() => this.restart(method), CALL_TIMEOUT);
+      this.pending.set(id, { resolve: resolve as (value: unknown) => void, reject, timer });
       const request: WorkerRequest = { type: 'call', id, method, args };
       this.worker!.postMessage(request);
     });
