@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://studio.rebarhq.app/</loc></url>
-  <url><loc>https://studio.rebarhq.app/fr.html</loc></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url><loc>https://studio.rebarhq.app/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://studio.rebarhq.app/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://studio.rebarhq.app/fr.html" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://studio.rebarhq.app/ar.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://studio.rebarhq.app/" />
+  </url>
+  <url><loc>https://studio.rebarhq.app/fr.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://studio.rebarhq.app/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://studio.rebarhq.app/fr.html" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://studio.rebarhq.app/ar.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://studio.rebarhq.app/" />
+  </url>
+  <url><loc>https://studio.rebarhq.app/ar.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://studio.rebarhq.app/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://studio.rebarhq.app/fr.html" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://studio.rebarhq.app/ar.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://studio.rebarhq.app/" />
+  </url>
 </urlset>

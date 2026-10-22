@@ -4,7 +4,7 @@ Static marketing page at **https://studio.rebarhq.app/**. “Open Studio” laun
 GitHub Pages app at **https://vanillaiice.github.io/rebar-studio/**. Plain HTML, CSS, and small
 JavaScript; no build, new packages, external fonts, or third-party page requests.
 
-English is at `/` and French at `/fr.html`. The header's language link works without JavaScript.
+English is at `/`, French at `/fr.html` and Arabic at `/ar.html`. The header's language link works without JavaScript.
 Both pages share `styles.css`, `theme.css`, `theme.js`, and `main.js`. Translate both HTML files
 when changing copy or release links; each includes its own metadata and screenshot captions.
 
@@ -94,3 +94,16 @@ and Rebar hostnames. Browser app hosting, data storage, and Electron release/upd
 are independent of this landing service.
 
 License: GPL-3.0-or-later, as in the parent repository. Copyright (C) 2026 hblabs.
+
+## Owner settings and Arabic
+
+Booking, WhatsApp and Umami analytics are set in the `SITE` block at the end of `main.js`
+(`BOOKING_URL`, `WHATSAPP_NUMBER`, `UMAMI_SCRIPT_URL`, `ANALYTICS_ID`). Until filled in, booking
+buttons fall back to email, WhatsApp links stay hidden and no analytics loads. When enabling
+Umami, add its host to the CSP in `Caddyfile`. Button events and `utm_*` passthrough are
+described in the top-level `docs/measurement.md`.
+
+Arabic is at `/ar.html` (`dir="rtl"`). The French and Arabic pages are generated from the English
+page with exact-string translation tables, so keep all three structurally identical when editing.
+Arabic copy is marked `TODO: native-speaker review`. Hidden `TODO(owner)` slots hold the demo clip,
+testimonials, case study, location, reply turnaround and server region.

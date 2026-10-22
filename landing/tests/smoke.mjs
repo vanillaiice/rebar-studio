@@ -7,7 +7,7 @@ const appUrl = 'https://vanillaiice.github.io/rebar-studio/';
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
 
 try {
-  for (const path of ['/', '/fr.html', '/theme.js', '/theme.css', '/up', '/robots.txt', '/sitemap.xml', '/assets/editor.webp', '/assets/document.webp', '/assets/social-fr.png']) {
+  for (const path of ['/', '/fr.html', '/ar.html', '/theme.js', '/theme.css', '/up', '/robots.txt', '/sitemap.xml', '/assets/editor.webp', '/assets/document.webp', '/assets/social-fr.png', '/assets/social-ar.png', '/assets/samples/permit-to-work.reb', '/assets/inspection.pdf']) {
     const response = await fetch(new URL(path, origin));
     assert.equal(response.status, 200, `${path} should return 200`);
     if (path === '/') {
@@ -60,8 +60,15 @@ try {
   await menu.click();
   await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Downloads', exact: true }).click();
   assert.equal(await menu.getAttribute('aria-expanded'), 'false');
-  await page.getByText('How do I back up my work?', { exact: false }).click();
-  assert.ok(await page.locator('details[open]').innerText().then((text) => text.includes('Keep a backup before clearing browser data.')));
+  await page.getByText('How do I back up or move my work?', { exact: false }).click();
+  assert.ok(await page.locator('details[open]').innerText().then((text) => text.includes('.rebbackup')));
+  assert.equal(await page.locator('.mobile-bar .button').isVisible(), true);
+  assert.equal(await page.locator('[data-whatsapp]:visible').count(), 0, 'WhatsApp hidden until configured');
+  assert.equal(await page.locator('.hero .button').count(), 1, 'One primary action in the hero');
+  for (const link of await page.locator('a.button').all()) assert.equal(await link.getAttribute('data-umami-event'), 'studio_click');
+  for (const link of await page.locator('[data-cta=form]').all()) assert.equal(await link.getAttribute('data-umami-event'), 'free_conversion_click');
+  await page.goto(`${origin}/?utm_source=smoke`);
+  assert.match(decodeURIComponent(await page.locator('.hero [data-cta=form]').getAttribute('href')), /Ref: utm_source=smoke/);
 
   // Tab from the top exposes a skip link and enters the page content.
   await page.goto(origin);
@@ -84,7 +91,7 @@ try {
   for (const link of await staticPage.getByRole('link', { name: 'Open Studio', exact: false }).all()) {
     assert.equal(await link.getAttribute('href'), appUrl);
   }
-  await staticPage.getByText('Do I need an account?', { exact: false }).click();
+  await staticPage.getByText('Is it really free?', { exact: false }).click();
   assert.equal(await staticPage.locator('details[open]').count(), 1);
   assert.ok(await staticPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 
@@ -97,22 +104,25 @@ try {
   await page.reload();
   assert.equal(await page.locator('html').getAttribute('data-theme'), 'light');
   await page.evaluate(() => { location.hash = '#features'; });
-  await page.getByRole('link', { name: 'Français', exact: true }).click();
+  await page.locator('.language-link[hreflang=fr]').click();
   assert.equal(new URL(page.url()).pathname, '/fr.html');
   assert.equal(new URL(page.url()).hash, '#features');
   assert.equal(await page.locator('html').getAttribute('lang'), 'fr');
   assert.equal(await page.locator('html').getAttribute('data-theme'), 'light');
   assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://studio.rebarhq.app/fr.html');
-  await page.getByRole('button', { name: 'Documents', exact: true }).click();
+  await page.getByRole('button', { name: 'Espace documents', exact: true }).click();
   assert.equal(await page.locator('#preview-caption').innerText(), 'Remplissez un document et calculez les totaux à partir du même modèle.');
-  await page.getByRole('button', { name: 'Activer le thème sombre' }).click();
+  await page.getByRole('button', { name: 'Utiliser le thème sombre' }).click();
   assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
-  await page.getByRole('link', { name: 'English', exact: true }).click();
+  await page.locator('.language-link[hreflang=ar]').click();
+  assert.equal(await page.locator('html').getAttribute('dir'), 'rtl');
+  assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
+  await page.locator('.language-link[hreflang=en]').click();
   assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
 
   for (const theme of ['light', 'dark']) {
     await page.evaluate((value) => localStorage.setItem('rebar-studio-landing-theme', value), theme);
-    for (const path of ['/', '/fr.html']) {
+    for (const path of ['/', '/fr.html', '/ar.html']) {
       for (const width of [360, 768, 1024, 1440]) {
         await page.setViewportSize({ width, height: 940 });
         await page.goto(new URL(path, origin).href);
@@ -124,7 +134,7 @@ try {
   await staticPage.goto(new URL('/fr.html', origin).href);
   assert.equal(await staticPage.locator('html').getAttribute('lang'), 'fr');
   assert.ok(await staticPage.getByRole('navigation', { name: 'Navigation principale' }).isVisible());
-  await staticPage.getByRole('link', { name: 'English', exact: true }).click();
+  await staticPage.locator('.language-link[hreflang=en]').click();
   assert.equal(await staticPage.locator('html').getAttribute('lang'), 'en');
 
   // System preference also works without saved settings or storage permission.
