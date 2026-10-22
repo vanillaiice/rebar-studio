@@ -29,13 +29,14 @@ systemTheme.addEventListener('change', () => {
   updateThemeControls();
 });
 
-const languageLink = document.querySelector('.language-link');
 // Keep the reader at the same section when switching language.
-languageLink.addEventListener('click', () => {
-  const destination = new URL(languageLink.href);
-  destination.hash = location.hash;
-  languageLink.href = destination.href;
-});
+for (const languageLink of document.querySelectorAll('.language-link')) {
+  languageLink.addEventListener('click', () => {
+    const destination = new URL(languageLink.href);
+    destination.hash = location.hash;
+    languageLink.href = destination.href;
+  });
+}
 
 const menu = document.querySelector('.menu-toggle');
 const navigation = document.querySelector('#navigation');
@@ -75,3 +76,46 @@ previewButtons.forEach((button) => {
     document.querySelector('#preview-caption').textContent = button.dataset.caption;
   });
 });
+
+// Owner settings. Until a value is filled in, the page keeps its email fallbacks,
+// hides WhatsApp links and loads no analytics.
+const SITE = {
+  bookingUrl: 'BOOKING_URL',
+  whatsappNumber: 'WHATSAPP_NUMBER', // digits only, with country code, e.g. 9745XXXXXXX
+  umamiScript: 'UMAMI_SCRIPT_URL', // e.g. https://cloud.umami.is/script.js (also add its host to the Caddyfile CSP)
+  umamiWebsiteId: 'ANALYTICS_ID',
+};
+const isSet = value => !/^[A-Z_]+$/.test(value);
+
+// Campaign parameters follow the visitor into booking, email and WhatsApp links.
+const utm = [...new URLSearchParams(location.search)].filter(([key]) => key.startsWith('utm_'));
+const utmNote = utm.map(([key, value]) => `${key}=${value}`).join('&');
+
+for (const link of document.querySelectorAll('[data-cta="booking"]')) {
+  if (!isSet(SITE.bookingUrl)) continue;
+  const url = new URL(SITE.bookingUrl);
+  for (const [key, value] of utm) url.searchParams.set(key, value);
+  link.href = url.href;
+}
+for (const link of document.querySelectorAll('a[href^="mailto:"]')) {
+  if (!utmNote) break;
+  const url = new URL(link.href);
+  const body = url.searchParams.get('body') || '';
+  url.searchParams.set('body', `${body}\n\nRef: ${utmNote}`);
+  link.href = url.href.replace(/\+/g, '%20');
+}
+for (const link of document.querySelectorAll('[data-whatsapp]')) {
+  if (!isSet(SITE.whatsappNumber)) continue;
+  const url = new URL(`https://wa.me/${SITE.whatsappNumber}`);
+  if (utmNote) url.searchParams.set('text', `Rebar Studio (${utmNote})`);
+  link.href = url.href;
+  link.hidden = false;
+}
+if (isSet(SITE.umamiScript) && isSet(SITE.umamiWebsiteId)) {
+  const script = document.createElement('script');
+  script.defer = true;
+  script.src = SITE.umamiScript;
+  script.dataset.websiteId = SITE.umamiWebsiteId;
+  document.head.append(script);
+  for (const note of document.querySelectorAll('[data-analytics-note]')) note.hidden = false;
+}

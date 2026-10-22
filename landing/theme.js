@@ -1,4 +1,5 @@
 // Apply the saved theme before the stylesheet loads. Storage may be unavailable.
+document.documentElement.classList.add('js');
 (() => {
   let saved;
   try { saved = localStorage.getItem('rebar-studio-landing-theme'); } catch { /* Use system preference. */ }

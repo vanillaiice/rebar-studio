@@ -1,24 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0f172a">
-  <title>Rebar Studio | Free form templates and PDF reports</title>
-  <meta name="description" content="Create reusable form templates, fill documents and produce PDFs with Rebar Studio. Free and open source, with web and desktop apps. No account required.">
+  <title>Rebar Studio | Site forms to clean PDF reports, free</title>
+  <meta name="description" content="Turn your Word and Excel site forms into clean PDF reports. Free and open source, works offline, no account. In beta. Or send us a form to convert.">
   <link rel="canonical" href="https://studio.rebarhq.app/">
   <link rel="icon" type="image/svg+xml" href="assets/studio.svg">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://studio.rebarhq.app/">
-  <meta property="og:title" content="Rebar Studio | Free form templates and PDF reports">
-  <meta property="og:description" content="Create reusable form templates, fill documents and produce PDFs with Rebar Studio. Free and open source, with web and desktop apps. No account required.">
+  <meta property="og:title" content="Rebar Studio | Site forms to clean PDF reports, free">
+  <meta property="og:description" content="Turn your Word and Excel site forms into clean PDF reports. Free and open source, works offline, no account. In beta.">
   <meta property="og:image" content="https://studio.rebarhq.app/assets/social.png">
-  <meta property="og:image:alt" content="Rebar Studio template editor and document preview.">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Rebar Studio: a site form turned into a clean PDF report, with sample data.">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="alternate" hreflang="en" href="https://studio.rebarhq.app/">
   <link rel="alternate" hreflang="fr" href="https://studio.rebarhq.app/fr.html">
+  <link rel="alternate" hreflang="ar" href="https://studio.rebarhq.app/ar.html">
   <link rel="alternate" hreflang="x-default" href="https://studio.rebarhq.app/">
   <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="fr_FR">
+  <meta property="og:locale:alternate" content="ar_AR">
+  <link rel="preload" as="image" href="assets/editor-720.webp" imagesrcset="assets/editor-720.webp 720w, assets/editor.webp 1440w" imagesizes="(max-width: 1240px) 100vw, 1176px">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Rebar Studio","applicationCategory":"BusinessApplication","operatingSystem":"Windows, Linux, Web","url":"https://studio.rebarhq.app/","downloadUrl":"https://github.com/vanillaiice/rebar-studio/releases","softwareVersion":"1.0.0-beta.6","license":"https://www.gnu.org/licenses/gpl-3.0.html","inLanguage":["en","fr","ar"],"description":"Free, open source tool to build form templates, fill them and export PDF reports. Works offline. In beta.","publisher":{"@type":"Organization","name":"hblabs","url":"https://hblabs.xyz/","email":"contact@hblabs.xyz"}}</script>
   <script src="theme.js"></script>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="theme.css">
@@ -45,13 +52,13 @@
     <header class="header wrap">
       <a class="brand" href="./" aria-label="Rebar Studio home"><img src="assets/studio.svg" width="34" height="34" alt=""><span>REBAR<span class="brand-divider">/</span><span class="brand-studio">STUDIO</span></span></a>
       <nav class="navigation" id="navigation" aria-label="Main navigation">
-        <a href="#workflow">How it works</a><a href="#features">Features</a><a href="#downloads">Downloads</a>
-        <a class="nav-launch" href="https://vanillaiice.github.io/rebar-studio/">Open Studio <svg class="icon" aria-hidden="true"><use href="#external"/></svg></a>
+        <a href="#workflow">How it works</a><a href="#features">What you get</a><a href="#compare">Studio vs Rebar</a><a href="#downloads">Downloads</a><a href="#faq">FAQ</a>
       </nav>
       <div class="header-controls">
-        <a class="language-link" href="fr.html" lang="fr" hreflang="fr" aria-label="Français" title="Français">FR</a>
-        <button class="theme-toggle" type="button" data-light-label="Use light theme" data-dark-label="Use dark theme" aria-label="Use light theme" hidden=""><svg class="icon theme-sun" aria-hidden="true"><use href="#sun"/></svg><svg class="icon theme-moon" aria-hidden="true"><use href="#moon"/></svg></button>
-        <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navigation" hidden=""><svg class="icon" aria-hidden="true"><use href="#menu"/></svg></button>
+        <a class="language-link" href="fr.html" lang="fr" hreflang="fr">FR</a>
+        <a class="language-link" href="ar.html" lang="ar" hreflang="ar">عربي</a>
+        <button class="theme-toggle" type="button" data-light-label="Use light theme" data-dark-label="Use dark theme" aria-label="Use light theme"><svg class="icon theme-sun" aria-hidden="true"><use href="#sun"/></svg><svg class="icon theme-moon" aria-hidden="true"><use href="#moon"/></svg></button>
+        <button class="menu-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navigation"><svg class="icon" aria-hidden="true"><use href="#menu"/></svg></button>
       </div>
     </header>
   </div>
@@ -59,60 +66,107 @@
   <div class="dark-top">
       <section class="hero wrap" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow"><span class="status-dot"></span> FORM TEMPLATE EDITOR</p>
-          <h1 id="hero-title">Build reusable forms. <span>Generate professional PDFs.</span></h1>
-          <p class="hero-description">Create form templates, fill documents and produce consistent PDFs in your browser or desktop app.</p>
-          <div class="actions"><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a><a class="button button-outline" href="#downloads"><svg class="icon" aria-hidden="true"><use href="#download"/></svg> Get the desktop app</a></div>
-          <p class="hero-note">Free and open source. No account required.</p>
+          <p class="eyebrow"><span class="status-dot"></span> FREE · OPEN SOURCE · BETA</p>
+          <h1 id="hero-title">Turn your Word and Excel site forms <span>into clean PDF reports.</span></h1>
+          <p class="hero-description">For site engineers, QA/QC teams and subcontractors. Rebuild a form once as a template, or send it to us and we will. Then fill it on any computer and export the PDF.</p>
+          <div class="actions"><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/" data-umami-event="studio_click">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a><a class="text-link" href="mailto:contact@hblabs.xyz?subject=Form%20to%20convert&amp;body=Hello%20hblabs%2C%0A%0AAttached%20is%20a%20blank%20copy%20of%20our%20form%2C%20with%20no%20client%20or%20project%20data.%0A%0AForm%20name%3A%20%0AWhat%20we%20use%20it%20for%3A%20%0AHow%20often%20we%20fill%20it%3A%20%0A%0AName%20and%20company%3A%20%0A" data-cta="form" data-umami-event="free_conversion_click">Send us a form to convert</a></div>
+          <p class="hero-note">Free and open source. Works offline. No account. In beta. <a href="https://wa.me/WHATSAPP_NUMBER" data-whatsapp data-umami-event="whatsapp_click" hidden>Message us on WhatsApp</a></p>
         </div>
-        <div class="hero-aside" aria-hidden="true"><span class="vertical-label">REBAR SUITE</span></div>
       </section>
       <section class="showcase wrap" aria-label="Studio product preview">
         <div class="preview-topbar"><div class="preview-tabs" role="group" aria-label="Choose a Studio screenshot"><button class="preview-tab" type="button" disabled="" data-preview="editor" data-caption="Edit your template and preview the document as you work." aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#code"/></svg> Template editor</button><button class="preview-tab" type="button" disabled="" data-preview="document" data-caption="Fill a document and calculate totals from the same template." aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#file"/></svg> Document workspace</button></div><span class="preview-label"><span class="status-dot"></span> SAMPLE DATA</span></div>
-        <div class="preview-images"><img id="editor-preview" src="assets/editor.webp" width="1440" height="940" alt="Rebar Studio editing a price estimate template, with .reb source on the left and a live document preview on the right" fetchpriority="high"><img id="document-preview" src="assets/document.webp" width="1440" height="940" alt="Rebar Studio filling a sample price estimate for Atlas Construction, with calculated line items and a document preview" hidden=""></div>
-        <div class="preview-caption"><span id="preview-caption">Edit your template and preview the document as you work.</span><a href="https://vanillaiice.github.io/rebar-studio/">Open Studio <span aria-hidden="true">↗</span></a></div>
+        <div class="preview-images"><img id="editor-preview" src="assets/editor.webp" srcset="assets/editor-720.webp 720w, assets/editor.webp 1440w" sizes="(max-width: 1240px) 100vw, 1176px" width="1440" height="940" alt="Rebar Studio editing a price estimate template, with .reb source on the left and a live document preview on the right" fetchpriority="high"><img id="document-preview" src="assets/document.webp" srcset="assets/document-720.webp 720w, assets/document.webp 1440w" sizes="(max-width: 1240px) 100vw, 1176px" width="1440" height="940" loading="lazy" alt="Rebar Studio filling a sample price estimate for Atlas Construction, with calculated line items and a document preview" hidden=""></div>
+        <div class="preview-caption"><span id="preview-caption">Edit your template and preview the document as you work.</span></div>
       </section>
     <div class="hazard-stripe" aria-hidden="true"></div>
   </div>
 
   <section class="workflow section wrap" id="workflow" aria-labelledby="workflow-title">
-    <div class="section-heading"><p class="eyebrow">HOW IT WORKS</p><div class="heading-row"><h2 id="workflow-title">Create, fill, <br>and export.</h2></div></div>
-    <div class="steps">
-      <article class="step"><span class="step-number" aria-hidden="true">◆</span><svg class="icon step-icon" aria-hidden="true"><use href="#code"/></svg><h3>Create a template</h3><p>Start from a sample and edit its .reb source to define your form fields and document layout.</p></article>
-      <article class="step"><span class="step-number" aria-hidden="true">◆</span><svg class="icon step-icon" aria-hidden="true"><use href="#file"/></svg><h3>Fill a document</h3><p>Enter your answers in the generated form, check calculated values and save a draft.</p></article>
-      <article class="step"><span class="step-number" aria-hidden="true">◆</span><svg class="icon step-icon" aria-hidden="true"><use href="#check"/></svg><h3>Produce your PDF</h3><p>Finalize the document to check required answers and lock it. Export directly on desktop, or use your browser's print dialog on the web.</p></article>
+    <div class="section-heading"><p class="eyebrow">HOW IT WORKS</p><div class="heading-row"><h2 id="workflow-title">Form in. PDF out.</h2></div></div>
+    <ol class="steps">
+      <li class="step"><span class="step-number" aria-hidden="true">1</span><svg class="icon step-icon" aria-hidden="true"><use href="#code"/></svg><h3>Make the template</h3><p>Start from a sample, or rebuild your form in .reb source (HTML with form fields). Prefer not to? Send it to us.</p></li>
+      <li class="step"><span class="step-number" aria-hidden="true">2</span><svg class="icon step-icon" aria-hidden="true"><use href="#file"/></svg><h3>Fill it</h3><p>Enter answers in a clean form. Totals calculate, required fields are checked, photos and signatures go in.</p></li>
+      <li class="step"><span class="step-number" aria-hidden="true">3</span><svg class="icon step-icon" aria-hidden="true"><use href="#check"/></svg><h3>Export the PDF</h3><p>The same clean layout every time. Direct export on desktop, the print dialog on the web.</p></li>
+    </ol>
+    <div class="before-after">
+      <figure><span class="eyebrow">BEFORE</span><img src="assets/before.webp" width="800" height="420" loading="lazy" alt="A spreadsheet inspection form with uneven formatting, a cut-off observation and a print-sign-scan signature box. Dummy data."><figcaption>A typical spreadsheet form. Dummy data.</figcaption></figure>
+      <span class="before-after-arrow" aria-hidden="true">→</span>
+      <figure><span class="eyebrow">AFTER</span><img src="assets/after.webp" width="794" height="420" loading="lazy" alt="The same inspection as a clean PDF report, with location, inspector, date, observations and follow-up. Dummy data."><figcaption>The same answers as a PDF. Dummy data.</figcaption></figure>
     </div>
+    <!-- TODO(owner): demo clip slot. Unhide when docs/demo-clip-script.md has been recorded (assets/demo.webm, assets/demo-poster.webp).
+    <video class="demo-clip" src="assets/demo.webm" poster="assets/demo-poster.webp" width="1280" height="720" muted loop playsinline autoplay preload="none" aria-label="Short clip: a template filled and exported as a PDF."></video>
+    -->
+    <div class="section-cta"><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/" data-umami-event="studio_click">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></div>
   </section>
 
   <section class="features-section" id="features" aria-labelledby="features-title"><div class="wrap section">
-    <div class="section-heading"><p class="eyebrow">FEATURES</p><div class="heading-row"><h2 id="features-title">Create once. Use again.</h2></div></div>
-    <div class="feature-layout"><div class="feature-lead"><div class="feature-lead-top"><svg class="icon" aria-hidden="true"><use href="#lock"/></svg><span>LOCAL STORAGE</span></div><h3>Offline use</h3><p>Templates and documents are stored on your device. The desktop app works offline, and the web app works offline after its initial download.</p><p class="small-note">Export a workspace backup from Settings to keep a separate copy.</p></div>
-      <div class="feature-list"><article><span class="feature-index" aria-hidden="true">◆</span><div><h3>Live preview</h3><p>See a paginated document preview update as you edit your template.</p></div></article><article><span class="feature-index" aria-hidden="true">◆</span><div><h3>Calculations and conditions</h3><p>Calculate table values and totals, show conditional fields and validate answers.</p></div></article><article><span class="feature-index" aria-hidden="true">◆</span><div><h3>Photos and signatures</h3><p>Add photos and drawn signatures to documents, and include images in your templates.</p></div></article><article><span class="feature-index" aria-hidden="true">◆</span><div><h3>Template versions</h3><p>Each document keeps the template version it was created with. Later template edits create a new version.</p></div></article></div>
+    <div class="section-heading"><p class="eyebrow">WHAT YOU GET</p><div class="heading-row"><h2 id="features-title">Made for the forms you fill every week.</h2></div></div>
+    <p class="audience-line">For site engineers, QA/QC and supervision teams, and MEP and fit-out subcontractors who send reports in a fixed format.</p>
+    <div class="feature-layout"><div class="feature-lead"><div class="feature-lead-top"><svg class="icon" aria-hidden="true"><use href="#lock"/></svg><span>LOCAL STORAGE</span></div><h3>Works offline</h3><p>Templates and documents stay on your device. The desktop app works offline, and the web app works offline after its first load.</p><p class="small-note">Export a workspace backup from Settings to keep a separate copy.</p></div>
+      <div class="feature-list"><article><span class="feature-index" aria-hidden="true">◆</span><div><h3>Daily reports and site diaries</h3><p>The same layout every day, with dates, weather, workforce and signatures.</p></div></article><article><span class="feature-index" aria-hidden="true">◆</span><div><h3>Inspection checklists</h3><p>Checklist rows, photos and inspector and contractor signatures in one PDF.</p></div></article><article><span class="feature-index" aria-hidden="true">◆</span><div><h3>Permits to work</h3><p>Required fields are checked before the permit is finalized and locked.</p></div></article><article><span class="feature-index" aria-hidden="true">◆</span><div><h3>Estimates with totals</h3><p>Table rows and totals calculate as you type.</p></div></article></div>
     </div>
-    <div class="starter-strip"><span class="eyebrow">10 SAMPLE TEMPLATES</span><p>Permit to work <span>/</span> Site diary <span>/</span> Inspection checklist <span>/</span> Price estimate <span>/</span> + 6 more</p></div>
-    <p class="template-service">Need a form recreated from an existing Word, Excel or PDF document? hblabs offers paid custom template development. <a href="mailto:contact@hblabs.xyz?subject=Custom%20Rebar%20template">Discuss your template</a>.</p>
+    <div class="samples" aria-labelledby="samples-title"><h3 id="samples-title">Sample templates and outputs</h3>
+      <a href="assets/samples/permit-to-work.reb" download="" data-umami-event="sample_pdf_download" data-umami-event-file="permit-to-work.reb">Permit to work (.reb) ↓</a>
+      <a href="assets/samples/site-diary.reb" download="" data-umami-event="sample_pdf_download" data-umami-event-file="site-diary.reb">Site diary (.reb) ↓</a>
+      <a href="assets/samples/inspection-checklist.reb" download="" data-umami-event="sample_pdf_download" data-umami-event-file="inspection-checklist.reb">Inspection checklist (.reb) ↓</a>
+      <a href="assets/inspection.pdf" download="" data-umami-event="sample_pdf_download" data-umami-event-file="inspection.pdf">Inspection report (PDF) ↓</a>
+    </div>
+    <p class="template-service">10 sample templates come with Studio. Need your own form rebuilt? <a href="mailto:contact@hblabs.xyz?subject=Form%20to%20convert&amp;body=Hello%20hblabs%2C%0A%0AAttached%20is%20a%20blank%20copy%20of%20our%20form%2C%20with%20no%20client%20or%20project%20data.%0A%0AForm%20name%3A%20%0AWhat%20we%20use%20it%20for%3A%20%0AHow%20often%20we%20fill%20it%3A%20%0A%0AName%20and%20company%3A%20%0A" data-cta="form" data-umami-event="free_conversion_click">Send us a form to convert</a>.</p>
+    <div class="section-cta"><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/" data-umami-event="studio_click">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></div>
   </div></section>
 
-  <section class="suite-section wrap section" aria-labelledby="suite-title"><p class="eyebrow">STUDIO &amp; REBAR</p><div class="suite-layout"><div><h2 id="suite-title">The free template editor behind Rebar.</h2><p>Rebar includes the same template and document tools. Use Studio independently for free, then export your <code>.reb</code> templates or <code>.rebpack</code> files with images and import them into Rebar for your construction team to use across projects.</p><p>Need to manage the work behind your reports? Rebar brings site operations, issues, drawings and project records together in one workspace.</p><a class="text-link" href="https://rebarhq.app/">Discover Rebar <svg class="icon" aria-hidden="true"><use href="#external"/></svg></a></div><div class="format-diagram" aria-label="Export a .reb template or a .rebpack containing its images from Studio and import it into Rebar"><div class="format-node"><img src="assets/studio.svg" width="32" height="32" alt=""><span>Studio<small>YOUR DEVICE</small></span></div><div class="format-bridge"><span><code>.reb</code> <code>.rebpack</code></span><svg class="format-arrow" viewBox="0 0 100 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h92m-6-6 6 6-6 6"/></svg><small>EXPORT &amp; IMPORT</small></div><div class="format-node"><svg class="icon" aria-hidden="true"><use href="#layers"/></svg><span>Rebar<small>YOUR TEAM</small></span></div></div></div></section>
+  <section class="suite-section wrap section" id="compare" aria-labelledby="suite-title"><p class="eyebrow">STUDIO VS REBAR</p><div class="suite-layout"><div><h2 id="suite-title">Free for you. Rebar for your team.</h2>
+    <p><strong>Studio</strong> is free and open source: one person, one computer, offline, no account. Build templates, fill them, export PDFs.</p>
+    <p><strong>Rebar</strong> is the connected platform, in beta: your team and projects, with issues, drawings, commercial records and portals. It includes everything in Studio, and your <code>.reb</code> and <code>.rebpack</code> files import directly.</p>
+    <a class="text-link" href="https://rebarhq.app/" data-umami-event="demo_click">See Rebar and book a demo <svg class="icon" aria-hidden="true"><use href="#external"/></svg></a></div><div class="format-diagram" aria-label="Export a .reb template or a .rebpack containing its images from Studio and import it into Rebar"><div class="format-node"><img src="assets/studio.svg" width="32" height="32" alt=""><span>Studio<small>YOUR DEVICE</small></span></div><div class="format-bridge"><span dir="ltr"><code>.reb</code> <code>.rebpack</code></span><svg class="format-arrow" viewBox="0 0 100 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h92m-6-6 6 6-6 6"/></svg><small>EXPORT &amp; IMPORT</small></div><div class="format-node"><svg class="icon" aria-hidden="true"><use href="#layers"/></svg><span>Rebar<small>YOUR TEAM</small></span></div></div></div></section>
 
   <section class="downloads-section" id="downloads" aria-labelledby="downloads-title"><div class="wrap section">
     <div class="section-heading"><p class="eyebrow">DOWNLOADS</p><div class="heading-row"><h2 id="downloads-title">Web and desktop</h2><p><a class="release-label" href="https://github.com/vanillaiice/rebar-studio/releases/tag/v1.0.0-beta.6">v1.0.0-beta.6 <span>BETA</span></a></p></div></div>
     <div class="download-grid">
-      <article class="download-card"><svg class="icon download-icon" aria-hidden="true"><use href="#external"/></svg><span class="eyebrow">WEB APP</span><h3>Browser</h3><p>Open Studio in your browser or install it as a web app.</p><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a><span class="download-meta">Initial download requires an internet connection.</span></article>
-      <article class="download-card"><svg class="icon download-icon" aria-hidden="true"><use href="#monitor"/></svg><span class="eyebrow">DESKTOP APP / 64-BIT</span><h3>Windows</h3><p>Available as an installer or a portable executable.</p><a class="button button-dark" href="https://github.com/vanillaiice/rebar-studio/releases/download/v1.0.0-beta.6/Rebar-Studio-1.0.0-beta.6-win-x64.exe">Download installer <svg class="icon" aria-hidden="true"><use href="#download"/></svg></a><a class="download-secondary" href="https://github.com/vanillaiice/rebar-studio/releases/download/v1.0.0-beta.6/Rebar-Studio-1.0.0-beta.6-win-x64-portable.exe">Portable executable ↗</a></article>
-      <article class="download-card"><svg class="icon download-icon" aria-hidden="true"><use href="#code"/></svg><span class="eyebrow">DESKTOP APP / 64-BIT</span><h3>Linux</h3><p>Available as an AppImage or a Debian package.</p><a class="button button-dark" href="https://github.com/vanillaiice/rebar-studio/releases/download/v1.0.0-beta.6/Rebar-Studio-1.0.0-beta.6-linux-x86_64.AppImage">Download AppImage <svg class="icon" aria-hidden="true"><use href="#download"/></svg></a><a class="download-secondary" href="https://github.com/vanillaiice/rebar-studio/releases/download/v1.0.0-beta.6/Rebar-Studio-1.0.0-beta.6-linux-amd64.deb">Debian package ↗</a></article>
+      <article class="download-card"><svg class="icon download-icon" aria-hidden="true"><use href="#external"/></svg><span class="eyebrow">WEB APP</span><h3>Browser</h3><p>Open Studio in your browser or install it as a web app.</p><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/" data-umami-event="studio_click">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a><span class="download-meta">The first load needs an internet connection.</span></article>
+      <article class="download-card"><svg class="icon download-icon" aria-hidden="true"><use href="#monitor"/></svg><span class="eyebrow">DESKTOP APP / 64-BIT</span><h3>Windows</h3><p>Available as an installer or a portable executable.</p><a class="button button-dark" href="https://github.com/vanillaiice/rebar-studio/releases/download/v1.0.0-beta.6/Rebar-Studio-1.0.0-beta.6-win-x64.exe" data-umami-event="studio_click" data-umami-event-platform="windows">Download installer <svg class="icon" aria-hidden="true"><use href="#download"/></svg></a><a class="download-secondary" href="https://github.com/vanillaiice/rebar-studio/releases/download/v1.0.0-beta.6/Rebar-Studio-1.0.0-beta.6-win-x64-portable.exe" data-umami-event="studio_click" data-umami-event-platform="windows-portable">Portable executable ↗</a></article>
+      <article class="download-card"><svg class="icon download-icon" aria-hidden="true"><use href="#code"/></svg><span class="eyebrow">DESKTOP APP / 64-BIT</span><h3>Linux</h3><p>Available as an AppImage or a Debian package.</p><a class="button button-dark" href="https://github.com/vanillaiice/rebar-studio/releases/download/v1.0.0-beta.6/Rebar-Studio-1.0.0-beta.6-linux-x86_64.AppImage" data-umami-event="studio_click" data-umami-event-platform="linux-appimage">Download AppImage <svg class="icon" aria-hidden="true"><use href="#download"/></svg></a><a class="download-secondary" href="https://github.com/vanillaiice/rebar-studio/releases/download/v1.0.0-beta.6/Rebar-Studio-1.0.0-beta.6-linux-amd64.deb" data-umami-event="studio_click" data-umami-event-platform="linux-deb">Debian package ↗</a></article>
     </div><p class="downloads-note">macOS users can use the web app. <a href="https://github.com/vanillaiice/rebar-studio/releases">Release notes &amp; all downloads <span aria-hidden="true">↗</span></a></p>
   </div></section>
 
-  <section class="faq-section wrap section" id="faq" aria-labelledby="faq-title"><div class="faq-heading"><p class="eyebrow">FAQ</p><h2 id="faq-title">Common questions</h2><a class="text-link" href="https://github.com/vanillaiice/rebar-studio/blob/master/docs/user-guide.md">Read the user guide <svg class="icon" aria-hidden="true"><use href="#external"/></svg></a></div><div class="faq-list">
-    <details><summary>Do I need an account?<span aria-hidden="true">+</span></summary><p>No. Studio does not require an account or a Rebar subscription.</p></details>
-    <details><summary>What is the difference between web and desktop?<span aria-hidden="true">+</span></summary><p>The desktop app exports PDFs directly. The web app uses the browser’s print dialog. Mixed portrait and landscape pages require the desktop app.</p></details>
-    <details><summary>How do I back up my work?<span aria-hidden="true">+</span></summary><p>In Settings, choose “Back up now” to export a <code>.rebbackup</code> file. You can restore it on another device. Keep a backup before clearing browser data.</p></details>
-    <details><summary>Do I need to know how to code?<span aria-hidden="true">+</span></summary><p>Filling documents does not require code. Creating or editing a template uses <code>.reb</code> source, which combines HTML with form fields. Sample templates and editor snippets are included.</p></details>
-    <details><summary>Does Studio sync between devices?<span aria-hidden="true">+</span></summary><p>No. Transfer documents using <code>.rebdoc</code> files, or move the full workspace using a backup.</p></details>
-  <details><summary>Do I need Rebar to use Studio?<span aria-hidden="true">+</span></summary><p>No. Studio works independently and is free to use. Rebar includes the same tools as part of its construction operations platform.</p></details></div></section>
+  <section class="trust-section wrap section" id="trust" aria-labelledby="trust-title"><p class="eyebrow">WHO IS BEHIND STUDIO</p><div class="trust-layout">
+    <div><h2 id="trust-title">Built by a civil engineer who writes software.</h2>
+      <p>Studio is made by hblabs, an independent software studio co-founded by Issa Habouba, a civil engineer and software developer. The source code is public under GPL-3.0.</p>
+      <!-- TODO(owner): confirm location, then add: <p>Based in LOCATION.</p> -->
+      <p><a class="text-link" href="mailto:contact@hblabs.xyz">contact@hblabs.xyz</a> · <a class="text-link" href="https://github.com/vanillaiice/rebar-studio">Source code ↗</a></p></div>
+    <div class="trust-facts">
+      <div><h3>Your data stays with you</h3><p>Studio stores templates and documents on your device. It has no account, no analytics and no upload: it only loads its own files. Back up from Settings to keep a copy.</p><p class="analytics-note" data-analytics-note hidden>This website (not the app) counts visits and button clicks with Umami, which uses no cookies.</p></div>
+      <div><h3>In beta</h3><p>Studio works, but it is still changing. Keep a backup before updating.</p></div>
+      <div><h3>What it does not do yet</h3><p>It does not import Word, Excel or PDF files: templates are written in .reb source. No sync between devices. No macOS installer (use the web app).</p></div>
+    </div></div>
+    <!-- TODO(owner): testimonial and case-study slots. Unhide only with real, approved quotes. -->
+    <section class="testimonials" aria-label="What users say" hidden><blockquote><p>TODO(owner): real quote</p><footer>TODO(owner): name, role, company</footer></blockquote></section>
+    <section class="case-study" aria-label="Case study" hidden><h3>TODO(owner): real case study title</h3><p>TODO(owner): one-paragraph summary</p></section>
+    <div class="section-cta"><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/" data-umami-event="studio_click">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></div>
+  </section>
 
+  <section class="faq-section wrap section" id="faq" aria-labelledby="faq-title"><div class="faq-heading"><p class="eyebrow">FAQ</p><h2 id="faq-title">Common questions</h2><a class="text-link" href="https://github.com/vanillaiice/rebar-studio/blob/master/docs/user-guide.md">Read the user guide <svg class="icon" aria-hidden="true"><use href="#external"/></svg></a></div><div class="faq-list">
+    <details><summary>Is it really free?<span aria-hidden="true">+</span></summary><p>Yes. Studio is free and open source (GPL-3.0), with no account and no subscription. Rebuilding a form for you is a separate service; we tell you the cost before any work.</p></details>
+    <details><summary>Can it open my Word or Excel form?<span aria-hidden="true">+</span></summary><p>No. The form is rebuilt once as a .reb template. You can do it yourself from a sample, or send us a blank copy and we will.</p></details>
+    <details><summary>Do I need to know how to code?<span aria-hidden="true">+</span></summary><p>Filling documents does not. Creating or editing a template uses .reb source, which combines HTML with form fields. Samples and editor snippets are included.</p></details>
+    <details><summary>Does anything leave my computer?<span aria-hidden="true">+</span></summary><p>No. Studio keeps templates and documents on your device and sends nothing to us.</p></details>
+    <details><summary>What is the difference between web and desktop?<span aria-hidden="true">+</span></summary><p>The desktop app exports PDFs directly. The web app uses the browser's print dialog. Mixed portrait and landscape pages need the desktop app.</p></details>
+    <details><summary>How do I back up or move my work?<span aria-hidden="true">+</span></summary><p>In Settings, choose "Back up now" to export a .rebbackup file and restore it on another device. Single documents move as .rebdoc files.</p></details>
+  </div></section>
+
+  <section class="final-cta wrap section" id="start" aria-labelledby="start-title">
+    <h2 id="start-title">Try it with one of your forms.</h2>
+    <p>Open Studio now, or send us a blank form first.</p>
+    <div class="actions"><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/" data-umami-event="studio_click">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a><a class="text-link" href="mailto:contact@hblabs.xyz?subject=Form%20to%20convert&amp;body=Hello%20hblabs%2C%0A%0AAttached%20is%20a%20blank%20copy%20of%20our%20form%2C%20with%20no%20client%20or%20project%20data.%0A%0AForm%20name%3A%20%0AWhat%20we%20use%20it%20for%3A%20%0AHow%20often%20we%20fill%20it%3A%20%0A%0AName%20and%20company%3A%20%0A" data-cta="form" data-umami-event="free_conversion_click">Send us a form to convert</a></div>
+    <ol class="next-steps" aria-label="What happens when you send a form">
+      <li>You email a blank form. Please remove all client and project data.</li>
+      <li>We reply with how it would work, and what it costs.</li>
+      <li>If you go ahead, we build the template and send you the .reb file.</li>
+    </ol>
+    <!-- TODO(owner): confirm turnaround, then add: <p class="next-steps-note">We reply within N working days.</p> -->
+  </section>
   </main>
-  <footer class="footer"><div class="hazard-stripe" aria-hidden="true"></div><div class="wrap"><div class="footer-top"><a class="brand" href="./"><img src="assets/studio.svg" width="34" height="34" alt=""><span>REBAR<span class="brand-divider">/</span><span class="brand-studio">STUDIO</span></span></a><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/">Open Studio <svg class="icon" aria-hidden="true"><use href="#arrow"/></svg></a></div><div class="footer-bottom"><span>A tool by <a href="https://hblabs.xyz/">hblabs</a> <span class="footer-dot">·</span> © 2026</span><nav aria-label="Footer"><a href="mailto:contact@hblabs.xyz">contact@hblabs.xyz</a><a href="https://rebarhq.app/">Discover Rebar</a><a href="https://github.com/vanillaiice/rebar-studio">Source code</a><a href="https://github.com/vanillaiice/rebar-studio/blob/master/docs/user-guide.md">Documentation</a><a href="https://github.com/vanillaiice/rebar-studio/blob/master/LICENSE">GPL-3.0</a></nav></div></div></footer>
+  <footer class="footer"><div class="hazard-stripe" aria-hidden="true"></div><div class="wrap"><div class="footer-top"><a class="brand" href="./"><img src="assets/studio.svg" width="34" height="34" alt=""><span>REBAR<span class="brand-divider">/</span><span class="brand-studio">STUDIO</span></span></a></div><div class="footer-bottom"><span>A tool by <a href="https://hblabs.xyz/">hblabs</a> <span class="footer-dot">·</span> © 2026</span><nav aria-label="Footer"><a href="mailto:contact@hblabs.xyz">contact@hblabs.xyz</a><a href="https://rebarhq.app/">Rebar</a><a href="https://github.com/vanillaiice/rebar-studio">Source code</a><a href="https://github.com/vanillaiice/rebar-studio/blob/master/docs/user-guide.md">Documentation</a><a href="https://github.com/vanillaiice/rebar-studio/blob/master/LICENSE">GPL-3.0</a><a href="https://wa.me/WHATSAPP_NUMBER" data-whatsapp data-umami-event="whatsapp_click" hidden>WhatsApp</a></nav></div></div></footer>
+  <div class="mobile-bar"><a class="button button-amber" href="https://vanillaiice.github.io/rebar-studio/" data-umami-event="studio_click">Open Studio</a><a class="mobile-bar-whatsapp" href="https://wa.me/WHATSAPP_NUMBER" data-whatsapp data-umami-event="whatsapp_click" aria-label="WhatsApp" hidden><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></a></div>
 </body>
 </html>
