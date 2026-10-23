@@ -12,8 +12,8 @@
 		Cache-Control "no-cache"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		# TODO(owner): when Umami is enabled in main.js, add its host to script-src and connect-src.
-		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'"
+		# Umami Cloud analytics (main.js): script from cloud.umami.is, events to its API.
+		Content-Security-Policy "default-src 'self'; script-src 'self' https://cloud.umami.is; style-src 'self'; img-src 'self'; font-src 'self'; connect-src https://cloud.umami.is https://api-gateway.umami.dev; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'"
 	}
 	file_server
 }

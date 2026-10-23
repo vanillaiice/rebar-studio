@@ -5,6 +5,14 @@ import { chromium } from 'playwright';
 const origin = process.env.LANDING_URL || 'http://127.0.0.1:4183';
 const appUrl = 'https://vanillaiice.github.io/rebar-studio/';
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
+// Umami Cloud is the only allowed third party; answer it locally so checks never reach the network.
+const umamiRequests = [];
+const newContext = browser.newContext.bind(browser);
+browser.newContext = async (options) => {
+  const context = await newContext(options);
+  await context.route('https://cloud.umami.is/**', (route) => { umamiRequests.push(route.request().url()); return route.fulfill({ contentType: 'application/javascript', body: '' }); });
+  return context;
+};
 
 try {
   for (const path of ['/', '/fr.html', '/ar.html', '/theme.js', '/theme.css', '/up', '/robots.txt', '/sitemap.xml', '/assets/editor.webp', '/assets/document.webp', '/assets/social-fr.png', '/assets/social-ar.png', '/assets/samples/permit-to-work.reb', '/assets/inspection.pdf']) {
@@ -27,7 +35,7 @@ try {
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
   const externalRequests = [];
   page.on('request', (request) => {
-    if (new URL(request.url()).origin !== new URL(origin).origin) externalRequests.push(request.url());
+    if (new URL(request.url()).origin !== new URL(origin).origin && !request.url().startsWith('https://cloud.umami.is/')) externalRequests.push(request.url());
   });
   for (const width of [360, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 940 });
@@ -80,6 +88,7 @@ try {
   assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior), 'auto');
   assert.deepEqual(errors, []);
   assert.deepEqual(externalRequests, []);
+  assert.ok(umamiRequests.some((url) => url === 'https://cloud.umami.is/script.js'), 'Umami loads');
   assert.equal(await page.evaluate(() => navigator.serviceWorker.getRegistrations().then((items) => items.length)), 0);
 
   const staticContext = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 360, height: 800 } });
