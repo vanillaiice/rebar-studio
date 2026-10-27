@@ -15,7 +15,7 @@ browser.newContext = async (options) => {
 };
 
 try {
-  for (const path of ['/', '/fr.html', '/ar.html', '/theme.js', '/theme.css', '/up', '/robots.txt', '/sitemap.xml', '/assets/editor.webp', '/assets/document.webp', '/assets/social-fr.png', '/assets/social-ar.png', '/assets/samples/permit-to-work.reb', '/assets/inspection.pdf']) {
+  for (const path of ['/', '/fr.html', '/ar.html', '/theme.js', '/theme.css', '/up', '/robots.txt', '/sitemap.xml', '/favicon.ico', '/apple-touch-icon.png', '/assets/editor.webp', '/assets/document.webp', '/assets/social-fr.png', '/assets/social-ar.png', '/assets/samples/permit-to-work.reb', '/assets/inspection.pdf']) {
     const response = await fetch(new URL(path, origin));
     assert.equal(response.status, 200, `${path} should return 200`);
     if (path === '/') {
