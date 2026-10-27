@@ -82,8 +82,8 @@ previewButtons.forEach((button) => {
 const SITE = {
   bookingUrl: 'BOOKING_URL',
   whatsappNumber: 'WHATSAPP_NUMBER', // digits only, with country code, e.g. 9745XXXXXXX
-  umamiScript: 'https://cloud.umami.is/script.js', // its hosts are allowed in the Caddyfile CSP
-  umamiWebsiteId: '6d137942-45f2-4aa8-856c-03448ae6ab6f',
+  umamiScript: 'https://stats.hblabs.xyz/script.js', // self-hosted; its host is allowed in the Caddyfile CSP
+  umamiWebsiteId: '12758932-e55d-4165-baad-a143d7a0045b',
 };
 const isSet = value => !/^[A-Z_]+$/.test(value);
 
