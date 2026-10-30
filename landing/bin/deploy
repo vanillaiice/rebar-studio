@@ -5,4 +5,4 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 [ $# -gt 0 ] || set -- deploy
-exec ../../app/rails/bin/kamal "$@"
+exec ../../apps/rails/bin/kamal "$@"

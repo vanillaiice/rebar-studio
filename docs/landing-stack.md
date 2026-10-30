@@ -128,7 +128,7 @@ Limit the Docker build context to required inputs and keep secrets out of the fi
 
 Package the static files on the deploying machine and push/pull through the existing local
 registry over SSH. Use an isolated standalone Kamal config/launcher for the landing page;
-the launcher uses `../../app/rails/bin/kamal`, matching STS landing’s use of its bundled
+the launcher uses `../../apps/rails/bin/kamal`, matching STS landing’s use of its bundled
 Rails Kamal. As STS does, build the working tree from `landing/` with `builder.context: .`
 and an allowlisted `.dockerignore`. No Node or Go build is involved.
 
@@ -178,9 +178,9 @@ Local foundations:
 
 - Studio: `src/index.css`, `src/app/themes.ts`, `public/favicon.svg`, `README.md`,
   `vite.config.ts`, `.github/workflows/release.yml`, `docs/releasing.md`.
-- Rebar: `../app/rails/app/assets/tailwind/application.css`,
-  `../app/rails/docs/guide/16-ui-system.md`, `../app/rails/config/deploy.yml`,
-  `../app/rails/deploy/README.md`.
+- Rebar: `../apps/rails/app/assets/tailwind/application.css`,
+  `../apps/rails/docs/guide/16-ui-system.md`, `../apps/rails/config/deploy.yml`,
+  `../apps/rails/deploy/README.md`.
 - STS: `~/Projects/sts/landing/README.md`, `Dockerfile`, `Caddyfile`, `config/deploy.yml`.
 
 Official behavior checked while preparing this proposal:

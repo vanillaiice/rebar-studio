@@ -70,7 +70,7 @@ Canonical URL, social metadata, `robots.txt`, and `sitemap.xml` use `studio.reba
 **vanillaiice@62.169.20.136**. The existing kamal-proxy owns ports 80/443 and handles the host
 route and Let's Encrypt certificate. Caddy only serves static files and `/up` on internal port 80.
 
-The launcher invokes `../../app/rails/bin/kamal` from `landing/`, just as STS uses its Rails
+The launcher invokes `../../apps/rails/bin/kamal` from `landing/`, just as STS uses its Rails
 app's bundled Kamal. Rebar Rails needs a working `bundle install` and its required Ruby version.
 Local Docker with Buildx and SSH access to the VPS are required. The local registry
 `localhost:5555` delivers images over the SSH connection; there is no registry account or
