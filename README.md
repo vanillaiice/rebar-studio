@@ -87,6 +87,34 @@ npm run electron:dist   # installers: AppImage and deb, NSIS and portable, dmg a
 Releases are tagged `vX.Y.Z` with [gover](https://github.com/vanillaiice/gover) (`.gover`); a tag
 builds the installers (see [docs/releasing.md](docs/releasing.md)).
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by
+[SignPath Foundation](https://signpath.org).
+
+The Windows releases are signed: the installer, the portable executable and the `Rebar Studio.exe`
+they install. Only files built from this repository are signed; the Electron and Chromium libraries
+shipped next to the app keep their own signatures. Each signed file is built by the
+[Release workflow](.github/workflows/release.yml) from a tagged commit of this repository, on
+GitHub-hosted runners, and every signing request is approved by hand.
+
+Team roles:
+
+- Committers and reviewers: [vanillaiice](https://github.com/vanillaiice)
+- Approvers: [vanillaiice](https://github.com/vanillaiice)
+
+### Privacy
+
+This program will not transfer any information to other networked systems unless specifically
+requested by the user or the person installing or operating it.
+
+The one connection it makes is the update check of the desktop app: with **Settings, Updates,
+Update automatically** on (the default), it asks GitHub Releases for a newer version when it starts.
+Turn that setting off and Studio connects only when you press **Check now**. GitHub sees the request,
+as it sees any download from it; see the
+[GitHub privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+The web app is served by GitHub Pages and, once loaded, works without a connection.
+
 ## License
 
 Rebar Studio is licensed under the GNU General Public License v3.0 or later; see

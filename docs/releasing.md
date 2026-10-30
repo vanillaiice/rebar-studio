@@ -8,7 +8,9 @@
 3. The **Release** workflow builds the installers on Linux (AppImage, deb) and Windows (NSIS
    installer, portable), and uploads them with the update files (`latest*.yml`, `beta*.yml`) to a
    **draft** GitHub release. macOS is not built for now (the `build.mac` config is kept for later).
-4. Check the draft, write its notes, publish it. Installed apps see the update on their next check.
+   With Windows signing set up, approve the job's two SignPath requests (see [Signing](#signing)).
+4. Check the draft, write its notes (ending with the link to the
+   [code signing policy](../README.md#code-signing-policy)), publish it. Installed apps see the update on their next check.
 
 A tag with a prerelease suffix (`v1.3.0-beta.1`) publishes to the **beta** channel: only apps whose
 Settings choose "Beta" take it. Mark that GitHub release as a pre-release.
@@ -25,6 +27,42 @@ warns. The Release workflow signs when these repository secrets exist, and build
 |---|---|
 | `CSC_LINK`, `CSC_KEY_PASSWORD` | the signing certificate (a base64 `.p12`) and its password. On macOS, the Developer ID Application certificate. On Windows only for an old certificate with an exportable key (see below) |
 | `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` | macOS notarization (electron-builder notarizes when they are set) |
+
+### Windows: SignPath
+
+Windows is signed by [SignPath Foundation](https://signpath.org), free for open source projects:
+the certificate is issued to SignPath Foundation (the publisher Windows shows), and the key stays
+with them. The README's [code signing policy](../README.md#code-signing-policy) is the page their
+terms ask for; link it from every release's notes.
+
+The **Release** workflow signs when the repository variable `SIGNPATH_ORGANIZATION_ID` is set, and
+builds unsigned otherwise. With signing, the Windows job:
+
+1. packages the app (installers included, only for `resources/app-update.yml`, then thrown away)
+   with `publisherName: SignPath Foundation`, so the installed app refuses updates signed by anyone else;
+2. sends `Rebar Studio.exe` to SignPath (artifact configuration `app`) and waits for the approval;
+3. builds the installer and the portable executable around the signed app (`--prepackaged`);
+4. sends both to SignPath (artifact configuration `installers`) and waits for the second approval;
+5. checks that every signature is valid and from SignPath Foundation;
+6. rebuilds the block map and `latest.yml` (`scripts/refresh-update-info.mjs`): signing changes the
+   installer's bytes, and electron-updater checks its sha512;
+7. uploads to the draft release.
+
+Each wait lasts up to an hour, so approve both requests in SignPath while the job runs. The NSIS
+uninstaller is the one file left unsigned: electron-builder builds and signs it inside the installer
+build, out of SignPath's reach.
+
+Setting it up:
+
+1. Apply at https://signpath.org/apply with the public repository. Their terms (https://signpath.org/terms)
+   also ask for multi-factor authentication on GitHub and SignPath, and a manual approval per release.
+2. Once accepted: in SignPath, add the predefined **GitHub.com** trusted build system and link it to
+   the project, create the artifact configurations `app` and `installers` from
+   [`.signpath/artifact-configurations/`](../.signpath/artifact-configurations/) (SignPath may tighten
+   them during review), and create a CI user with submitter rights on the release signing policy.
+3. In the repository settings: the secret `SIGNPATH_API_TOKEN` (the CI user's API token), and the
+   variables `SIGNPATH_ORGANIZATION_ID`, `SIGNPATH_PROJECT_SLUG` and `SIGNPATH_SIGNING_POLICY_SLUG`
+   (the slugs SignPath shows, often `rebar-studio` and `release-signing`).
 
 ### Windows options
 

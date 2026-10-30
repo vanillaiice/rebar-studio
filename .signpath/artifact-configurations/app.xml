@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SignPath artifact configuration "app": the Rebar Studio executable, before the installers pack it.
+     Only our own executable: the Electron and Chromium libraries next to it are upstream files. -->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <zip-file>
+    <pe-file path="Rebar Studio.exe" product-name="Rebar Studio">
+      <authenticode-sign />
+    </pe-file>
+  </zip-file>
+</artifact-configuration>
