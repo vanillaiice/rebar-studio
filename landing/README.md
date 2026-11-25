@@ -1,6 +1,6 @@
 # Rebar Studio landing
 
-Static marketing page at **https://studio.rebarhq.app/**. “Open Studio” launches the existing
+Static marketing page at **https://studio.rebarhq.tech/**. “Open Studio” launches the existing
 GitHub Pages app at **https://vanillaiice.github.io/rebar-studio/**. Plain HTML, CSS, and small
 JavaScript; no build, new packages, external fonts, or third-party page requests.
 
@@ -61,7 +61,7 @@ are directed to the web app because the current release workflow does not build 
 `assets/studio.svg` is the existing Studio logo.
 Refresh screenshots deliberately when product UI changes, using a disposable local workspace.
 
-Canonical URL, social metadata, `robots.txt`, and `sitemap.xml` use `studio.rebarhq.app`.
+Canonical URL, social metadata, `robots.txt`, and `sitemap.xml` use `studio.rebarhq.tech`.
 
 ## Deploy: same pattern as STS landing
 
@@ -76,7 +76,7 @@ Local Docker with Buildx and SSH access to the VPS are required. The local regis
 `localhost:5555` delivers images over the SSH connection; there is no registry account or
 landing-specific `.env`. No database, accessories, persistent storage, or public port binding.
 
-1. Set a DNS-only **A** record for `studio.rebarhq.app` to `62.169.20.136`.
+1. Set a DNS-only **A** record for `studio.rebarhq.tech` to `62.169.20.136`.
 2. First deployment: `landing/bin/deploy setup`.
 3. Updates: `landing/bin/deploy`. Logs: `landing/bin/deploy logs`.
 4. Inspect configuration: `landing/bin/deploy config`.

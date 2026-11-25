@@ -43,7 +43,7 @@ try {
     await page.locator('#editor-preview').waitFor();
     assert.equal(await page.locator('h1').count(), 1);
     assert.equal(await page.locator('main').count(), 1);
-    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://studio.rebarhq.app/');
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://studio.rebarhq.tech/');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `No overflow at ${width}px`);
     assert.ok(await page.locator('#editor-preview').evaluate((image) => image.complete && image.naturalWidth > 0));
     assert.equal(await page.getByRole('button', { name: /Menu/ }).isVisible(), width <= 1100);
@@ -118,7 +118,7 @@ try {
   assert.equal(new URL(page.url()).hash, '#features');
   assert.equal(await page.locator('html').getAttribute('lang'), 'fr');
   assert.equal(await page.locator('html').getAttribute('data-theme'), 'light');
-  assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://studio.rebarhq.app/fr.html');
+  assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://studio.rebarhq.tech/fr.html');
   await page.getByRole('button', { name: 'Espace documents', exact: true }).click();
   assert.equal(await page.locator('#preview-caption').innerText(), 'Remplissez un document et calculez les totaux à partir du même modèle.');
   await page.getByRole('button', { name: 'Utiliser le thème sombre' }).click();

@@ -1,7 +1,7 @@
 # Rebar Studio landing page: proposed stack
 
 Status: approved, implemented, and deployed on 2026-10-05 as a landing-only service at
-`https://studio.rebarhq.app/`.
+`https://studio.rebarhq.tech/`.
 The browser app stays at its verified existing GitHub Pages host:
 `https://vanillaiice.github.io/rebar-studio/`. Deployment follows STS landing.
 
@@ -115,7 +115,7 @@ The browser app's hosting, PWA, IndexedDB origin, and update behavior stay as th
 ## Kamal deployment design
 
 Existing configurations agree on VPS `62.169.20.136`, SSH user `vanillaiice`, local image registry
-`localhost:5555`, and `amd64` builds. Rebar currently routes `s.rebarhq.app`; the STS landing routes
+`localhost:5555`, and `amd64` builds. Rebar currently routes `rebarhq.tech`; the STS landing routes
 `sts.hblabs.xyz`. The initial deployment verified the DNS A record, Studio's HTTPS response,
 its health endpoint, and the existing STS/Rebar routes. The proxy lists all four services,
 including Binoculars, as running with TLS.

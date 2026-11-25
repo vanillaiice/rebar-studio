@@ -96,7 +96,7 @@ Node, no `NODE_OPTIONS` or inspector flags, and the app loads only from its inte
 
 ## The web app
 
-The public landing page at **https://studio.rebarhq.app/** is a separate static Caddy service,
+The public landing page at **https://studio.rebarhq.tech/** is a separate static Caddy service,
 deployed with the same Kamal pattern as STS landing on the shared VPS. It links to the existing
 browser app at **https://vanillaiice.github.io/rebar-studio/** and published desktop release assets.
 See [landing/README.md](../landing/README.md) for preview, release-link maintenance, and deployment:

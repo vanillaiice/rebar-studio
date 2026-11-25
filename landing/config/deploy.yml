@@ -13,7 +13,7 @@ ssh:
   user: vanillaiice
 
 proxy:
-  host: studio.rebarhq.app
+  host: studio.rebarhq.tech
   ssl: true
   app_port: 80
   healthcheck:

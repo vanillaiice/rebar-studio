@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://studio.rebarhq.app/sitemap.xml
+Sitemap: https://studio.rebarhq.tech/sitemap.xml
